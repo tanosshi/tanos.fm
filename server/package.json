@@ -1,0 +1,25 @@
+{
+  "name": "tanos-free-media-server",
+  "version": "1.0.0",
+  "description": "A quick yet ad-free media downloader",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@iamtraction/google-translate": "^2.0.1",
+    "@vitalets/google-translate-api": "^9.2.1",
+    "cheerio": "^1.0.0-rc.12",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.18.2",
+    "translate-google": "^1.5.0",
+    "twdl": "^2.11.1",
+    "wanakana": "^5.3.1",
+    "youtube-sr": "^4.3.11",
+    "ytdl-core": "^4.11.5"
+  }
+}
