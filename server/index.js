@@ -1597,7 +1597,15 @@ app.get("/lyrics", async (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 3001;
+app.get('/site', (req, res) => {
+  res.sendFile(path.join(__dirname, 'client', 'build', 'index.html'));
+});
+
+app.get('/alt', (req, res) => {
+  res.sendFile(path.join(__dirname, 'client', 'public', 'index.html'));
+});
+
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
