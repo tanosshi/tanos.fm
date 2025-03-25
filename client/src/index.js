@@ -14,6 +14,7 @@ root.render(
     <Router>
       <Routes>
         <Route path="/" element={<App />} />
+        <Route path="*" element={<App />} />
         <Route path="/download" element={<DownloadPage />} />
       </Routes>
     </Router>
