@@ -11,7 +11,7 @@ const rateLimiter = (req, res, next) => {
   const now = Date.now();
   const sec = 6 * 10;
   const windowMs = sec * 1000;
-  const maxRequests = sec / 10 + 2; // making sure it's not too much
+  const maxRequests = sec / 10 + 1; // making sure it's not too much
 
   const requests = rateLimitStore.get(ip) || [];
   
@@ -59,8 +59,8 @@ const SPOTIFY_CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET;
 const scdl = require('soundcloud-downloader').default;
 
 /////// ===== File Editing ===== ///////
-const fs = require("fs"); // Alternative to axios for downloading files
-const axios = require("axios"); // Direct Downloads
+const fs = require("fs");
+const axios = require("axios");
 const path = require("path");
 const sharp = require("sharp");
 const crypto = require("crypto");
@@ -532,15 +532,14 @@ app.post("/fetch", async (req, res) => {
       return res.status(400).json({valid: false, message: "nigga is not allowed"});
     case url.toLowerCase() == "kys":
       return res.status(400).json({valid: false, message: "kill yourself"});
-      case url.toLowerCase() == "kill yourself":
-        return res.status(400).json({valid: false, message: "kys !!!"});
-        case url.toLowerCase() == "hi":
-          return res.status(400).json({valid: false, message: "heelloooo"});
+    case url.toLowerCase() == "kill yourself":
+      return res.status(400).json({valid: false, message: "kys !!!"});
+    case url.toLowerCase() == "hi":
+      return res.status(400).json({valid: false, message: "heelloooo"});
   }
 
   toggleAnime = false;
   try {
-    
     // Log data
     const logData = {
       url: url,
@@ -1430,7 +1429,6 @@ app.get("/lyrics", async (req, res) => {
 
     const hasJapanese = /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff]/.test(track_name + artist_name);
     
-    // If Japanese, try exact match first
     if (hasJapanese) {
       try {
         const query = {
@@ -1446,7 +1444,7 @@ app.get("/lyrics", async (req, res) => {
             const processedLyrics = await translateAndRomanize(syncedLyrics);
             const safeFilename = sanitizeFilename(track_name);
             res.setHeader('Content-Type', 'text/plain');
-            res.setHeader('Content-Disposition', `attachment; filename="${safeFilename}_romanized.lrc"`);
+            res.setHeader('Content-Disposition', `attachment; filename="${safeFilename}.lrc"`);
             return res.send(processedLyrics);
           } else {
             const safeFilename = sanitizeFilename(track_name);
@@ -1481,7 +1479,7 @@ app.get("/lyrics", async (req, res) => {
             const processedLyrics = await translateAndRomanize(syncedLyrics);
             const safeFilename = sanitizeFilename(track_name);
             res.setHeader('Content-Type', 'text/plain');
-            res.setHeader('Content-Disposition', `attachment; filename="${safeFilename}_romanized.lrc"`);
+            res.setHeader('Content-Disposition', `attachment; filename="${safeFilename}.lrc"`);
             return res.send(processedLyrics);
           } else {
             const safeFilename = sanitizeFilename(track_name);
@@ -1502,7 +1500,7 @@ app.get("/lyrics", async (req, res) => {
                 const processedLyrics = await translateAndRomanize(qqLyrics.original);
                 const safeFilename = sanitizeFilename(track_name);
                 res.setHeader('Content-Type', 'text/plain');
-                res.setHeader('Content-Disposition', `attachment; filename="${safeFilename}_romanized.lrc"`);
+                res.setHeader('Content-Disposition', `attachment; filename="${safeFilename}.lrc"`);
                 return res.send(processedLyrics);
               } else {
                 const safeFilename = sanitizeFilename(track_name);
@@ -1523,7 +1521,7 @@ app.get("/lyrics", async (req, res) => {
                 const processedLyrics = await translateAndRomanize(qqLyrics.original);
                 const safeFilename = sanitizeFilename(track_name);
                 res.setHeader('Content-Type', 'text/plain');
-                res.setHeader('Content-Disposition', `attachment; filename="${safeFilename}_romanized.lrc"`);
+                res.setHeader('Content-Disposition', `attachment; filename="${safeFilename}.lrc"`);
                 return res.send(processedLyrics);
               } else {
                 const safeFilename = sanitizeFilename(track_name);
@@ -1546,7 +1544,7 @@ app.get("/lyrics", async (req, res) => {
                 const processedLyrics = await translateAndRomanize(neteaseLyrics.original);
                 const safeFilename = sanitizeFilename(track_name);
                 res.setHeader('Content-Type', 'text/plain');
-                res.setHeader('Content-Disposition', `attachment; filename="${safeFilename}_romanized.lrc"`);
+                res.setHeader('Content-Disposition', `attachment; filename="${safeFilename}.lrc"`);
                 return res.send(processedLyrics);
               } else {
                 const safeFilename = sanitizeFilename(track_name);
@@ -1567,7 +1565,7 @@ app.get("/lyrics", async (req, res) => {
                 const processedLyrics = await translateAndRomanize(neteaseLyrics.original);
                 const safeFilename = sanitizeFilename(track_name);
                 res.setHeader('Content-Type', 'text/plain');
-                res.setHeader('Content-Disposition', `attachment; filename="${safeFilename}_romanized.lrc"`);
+                res.setHeader('Content-Disposition', `attachment; filename="${safeFilename}.lrc"`);
                 return res.send(processedLyrics);
               } else {
                 const safeFilename = sanitizeFilename(track_name);

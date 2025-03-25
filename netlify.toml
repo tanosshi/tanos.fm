@@ -1,0 +1,9 @@
+[build]
+  command = "npm run install-deps"
+  publish = "client/build"
+  functions = "server"
+
+[dev]
+  command = "npm start"
+  targetPort = 3001
+  server = "server" 
