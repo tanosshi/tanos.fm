@@ -1,9 +1,0 @@
-name = "tanos-fm"
-type = "webpack"
-account_id = "69c0e5ed76b2c97bc430da9190f28b85"
-workers_dev = true
-route = "tanos-fm.taanossh-i.workers.dev/*"
-
-[site]
-bucket = "./client/build"
-entry-point = "index.html"
