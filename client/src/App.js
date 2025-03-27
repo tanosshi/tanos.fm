@@ -327,7 +327,7 @@ function App() {
     
     setDownloading(prev => ({ ...prev, [format]: true }));
     try {
-      window.location.href = `http://localhost:3001/download?url=${encodeURIComponent(mediaInfo.url)}&format=${format}`;
+      window.location.href = `/download?url=${encodeURIComponent(mediaInfo.url)}&format=${format}`;
     } finally {
       setTimeout(() => {
         setDownloading(prev => ({ ...prev, [format]: false }));
@@ -384,7 +384,7 @@ function App() {
     setShowSupported(false);
 
     try {
-      const response = await fetch('http://localhost:3001/fetch', {
+      const response = await fetch('/fetch', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1045,7 +1045,7 @@ function App() {
                               setIsProcessing(true);
                               try {
                                 setIsLoadingLyrics(true);
-                                const response = await fetch(`http://localhost:3001/lyrics?url=${encodeURIComponent(mediaInfo.title)}&romanized=true`);
+                                const response = await fetch(`/lyrics?url=${encodeURIComponent(mediaInfo.title)}&romanized=true`);
                                 if (!response.ok) {
                                   setNotification({
                                     show: true,
@@ -1105,7 +1105,7 @@ function App() {
                               setShowRomanizedPopup(false);
                               try {
                                 setIsLoadingLyrics(true);
-                                const response = await fetch(`http://localhost:3001/lyrics?url=${encodeURIComponent(mediaInfo.title)}`);
+                                const response = await fetch(`/lyrics?url=${encodeURIComponent(mediaInfo.title)}`);
                                 if (!response.ok) {
                                   setNotification({
                                     show: true,
@@ -1414,7 +1414,7 @@ function App() {
                                   (async () => {
                                     try {
                                       setIsLoadingLyrics(true);
-                                      const response = await fetch(`http://localhost:3001/lyrics?url=${encodeURIComponent(mediaInfo.title)}`);
+                                      const response = await fetch(`/lyrics?url=${encodeURIComponent(mediaInfo.title)}`);
                                       if (!response.ok) {
                                         setNotification({
                                           show: true,

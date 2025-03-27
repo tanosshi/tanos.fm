@@ -6,23 +6,6 @@
 
 ![tanos-frontend](thumbnail.png)
 
-Before working on the project install all deps by running
-```bash
-$ npm run "install-deps"
-```
-
-Build the project by running
-```bash
-$ npm run "build"
-```
-
-To run the server after building run
-```bash
-$ cd server && npm start
-or
-$ npm run "server"
-```
-
 Todo
 
 ✔️ Success ❌ Not on priority ⏳ Working on it

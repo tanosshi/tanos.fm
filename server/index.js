@@ -11,7 +11,7 @@ const rateLimiter = (req, res, next) => {
   const now = Date.now();
   const sec = 6 * 10;
   const windowMs = sec * 1000;
-  const maxRequests = sec / 10 + 1; // making sure it's not too much
+  const maxRequests = sec / 10 + (1 * 10); // making sure it's not too much
 
   const requests = rateLimitStore.get(ip) || [];
   
@@ -726,7 +726,7 @@ app.get('/stream', async (req, res) => {
 
     // Return the secure stream URL
     res.json({
-      streamUrl: `http://localhost:3001/video/${streamId}`
+      streamUrl: `video/${streamId}`
     });
   } catch (error) {
     console.error('Stream error:', error);
@@ -1603,7 +1603,7 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = 3001;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
