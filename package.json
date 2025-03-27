@@ -7,6 +7,7 @@
     "start": "concurrently \"cd server && npm start\" \"cd client && npm start\"",
     "dev": "concurrently \"cd server && npm start\" \"cd client && npm start\"",
     "install-deps": "concurrently \"cd server && npm install\" \"cd client && npm install\" \"npm install\"",
+    "build": "cd client && npm run build",
     "server": "cd server && npm start",
     "client": "cd client && npm start"
   },
