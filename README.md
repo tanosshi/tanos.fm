@@ -1,6 +1,6 @@
 # tanos.fm 📦
 
-### My first React.JS project
+### This project is still under construction, dont bother creating issues
 
 **tanos**'s **f**ree **m**edia is a quick yet ad-free media downloader, made for educational purposes only.
 
@@ -34,7 +34,7 @@ Todo
 
 * Find a way to make spotify work ✔️
 
-* Clean up code ⏳
+* Clean up code and fix UI on server ⏳
 
 * Add more sites ❌
 
