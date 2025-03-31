@@ -23,6 +23,8 @@ or
 $ npm run "server"
 ```
 
+![tanos-frontend](front_end.png)
+
 Todo
 
 ✔️ Success ❌ Not on priority ⏳ Working on it
