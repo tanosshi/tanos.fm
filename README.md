@@ -16,7 +16,7 @@ Build the project by running
 $ npm run "build"
 ```
 
-To run the server after building run
+To run the server after building run, make sure the env in the server directory is filled in.
 ```bash
 $ cd server && npm start
 or
