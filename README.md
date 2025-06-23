@@ -1,5 +1,5 @@
 # tanos.fm 📦
-
+crazily broken atm, dont expect it to work
 ### This project is still under construction, dont bother creating issues
 
 **tanos**'s **f**ree **m**edia is a quick yet ad-free media downloader, made for educational purposes only.
@@ -39,6 +39,6 @@ Todo
 * Add more sites ❌
 
 # Credits
-* [tanos](https://discordapp.com/users/916798305390964778) - Frontend and backend 🚧
+* [tanos](https://github.com/tanosshi) - Frontend and backend 🚧
 
 * [ytdl-core, ruhend-scraper, fluent-ffmpeg, youtube-sr, twitter-downloader, soundcloud-downloader](#) - For the APIs used 🧑‍🔬
