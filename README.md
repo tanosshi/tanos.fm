@@ -38,6 +38,8 @@ Todo
 
 * Add more sites ❌
 
+#### bugged static site (scaling is wrong) at [https://moonlit-malasada-a5e63c.netlify.app/](https://moonlit-malasada-a5e63c.netlify.app/)
+
 # Credits
 * [tanos](https://github.com/tanosshi) - Frontend and backend 🚧
 
