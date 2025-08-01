@@ -1,14 +1,13 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
+import React from "react";
+import ReactDOM from "react-dom/client";
 
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import './index.css';
-import './output.css';
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import "./output.css";
 
-import App from './App';
-import DownloadPage from './DownloadPage';
+import App from "./App";
+import DownloadPage from "./DownloadPage";
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
+const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
     <Router>

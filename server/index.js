@@ -4,6 +4,23 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 
+const fs = require("fs");
+const axios = require("axios");
+const path = require("path");
+const sharp = require("sharp");
+const crypto = require("crypto");
+
+const ffmpeg = require("fluent-ffmpeg");
+const { Readable } = require("stream");
+
+const { TwitterDL } = require("twitter-downloader");
+
+const fetch = require("node-fetch");
+const cheerio = require("cheerio");
+const tinyurl = require("tinyurl");
+
+const { Client } = require("lrclib-api");
+
 const rateLimitStore = new Map();
 
 const rateLimiter = (req, res, next) => {
@@ -45,8 +62,8 @@ const rateLimiter = (req, res, next) => {
   next();
 };
 
+// -- Importing all the code, seperated them for better organization and maintainability
 const { ytmp3, ytmp4, ttdl, igdl } = require("ruhend-scraper");
-
 const getYoutubeInfo = require("./services/info/getYoutubeInfo.js");
 const getSpotifyInfo = require("./services/info/getSpotifyInfo.js");
 const getSpotifyAccessToken = require("./services/info/getSpotifyAccessToken.js");
@@ -56,32 +73,18 @@ const getAlbumCoverFromSoundCloud = require("./services/albums/getAlbumCoverFrom
 const getAlbumCoverFromLastFM = require("./services/albums/getAlbumCoverFromLastFM.js");
 const { searchQQMusic, searchNetease } = require("./services/lyrics/search.js");
 const getNeteaseCloudMusicLyrics = require("./services/lyrics/getNeteaseCloudMusicLyrics.js");
-
-const fs = require("fs");
-const axios = require("axios");
-const path = require("path");
-const sharp = require("sharp");
-const crypto = require("crypto");
-
-const ffmpeg = require("fluent-ffmpeg");
-const { Readable } = require("stream");
-
-const { TwitterDL } = require("twitter-downloader");
-
-const fetch = require("node-fetch");
-const cheerio = require("cheerio");
-const tinyurl = require("tinyurl");
-
-const { Client } = require("lrclib-api");
 const lrcClient = new Client();
 
-const app = express();
+// -- Unnecessary but might be fixing something
+const SOUNDCLOUD_CLIENT_ID = process.env.SOUNDCLOUD_CLIENT_ID;
 
+// -- Loading the site
+const app = express();
 app.use(cors());
 app.use(express.json());
-
 app.use(express.static(path.join(__dirname, "..", "client", "build")));
 
+// -- Second part of importing all the codes
 const fetchRoutes = require("./functions/fetch");
 const downloadRoutes = require("./functions/download");
 const streamRoutes = require("./functions/stream");
@@ -90,14 +93,14 @@ app.use("/fetch", fetchRoutes);
 app.use("/download", downloadRoutes);
 app.use("/stream", streamRoutes);
 
+// -- Load the built static page
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "..", "client", "build", "index.html"));
 });
 
 app.use(rateLimiter);
 
-const SOUNDCLOUD_CLIENT_ID = process.env.SOUNDCLOUD_CLIENT_ID;
-
+// -- Small utility to clean up generated files
 const tempFiles = new Set();
 const cleanupTempFiles = () => {
   const tempFilePatterns = [
@@ -137,9 +140,10 @@ const cleanupTempFiles = () => {
   });
 };
 
-setInterval(cleanupTempFiles, 5 * 60 * 1000);
-cleanupTempFiles();
+setInterval(cleanupTempFiles, 5 * 60 * 1000); // Toggle
+cleanupTempFiles(); // Toggle
 
+// -- Used by a couple codes, append any new domains here
 function isValidUrl(url) {
   try {
     new URL(url);
@@ -162,8 +166,9 @@ function isValidUrl(url) {
   }
 }
 
-let toggleAnime = false;
+let toggleAnime = false; // Anime function is gone, but this is still used, will remove the leftovers soon
 
+// -- Create a log, it's stated in the ToS that it'll be logged anyway
 function logToHistory(requestData) {
   const historyPath = path.join(__dirname, "history.json");
   let history = [];
@@ -195,6 +200,7 @@ function logToHistory(requestData) {
   }
 }
 
+// -- Create a pattern for search variations, to grab the best results
 function generateSearchVariations(title, artist) {
   const variations = [];
 
@@ -231,6 +237,7 @@ function generateSearchVariations(title, artist) {
   return [...new Set(variations)];
 }
 
+// -- Translation part.
 const wanakana = require("wanakana");
 const translate = require("@iamtraction/google-translate");
 
@@ -306,6 +313,7 @@ function sanitizeFilename(filename) {
   return romaji.replace(/[^a-zA-Z0-9\s-]/g, "").trim();
 }
 
+// -- cba to explain this, it's a lyrics endpoint thats all
 app.get("/lyrics", async (req, res) => {
   try {
     const { url, romanized } = req.query;
@@ -565,6 +573,7 @@ app.get("/lyrics", async (req, res) => {
   }
 });
 
+// -- push the files
 app.use(express.static(path.join(__dirname, "../client/build")));
 
 app.get("*", (req, res) => {

@@ -2,9 +2,13 @@
 /node_modules
 /server/node_modules
 /client/node_modules
+*/node_modules
+client/src/ol.app.js
 
 # Enviroment Variables
 /client/.env
 /server/.env
 /client/build
 *.bak
+.env
+*env*

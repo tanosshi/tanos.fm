@@ -1,6 +1,6 @@
 # tanos.fm 📦
 
-UI and Downloads are broken at the moment, getting fixed as soon as possible.
+Downloads are broken at the moment.
 
 ### This project is still under construction, dont bother creating issues
 
@@ -19,24 +19,24 @@ $ npm run "install-deps"
 Build and run the project by running
 
 ```bash
-$ npm run start
+$ npm start
 ```
 
 ![tanos-frontend](front_end.png)
 
 Todo
 
-✔️ Success ❌ Broken ⏳ Working on it
+✔️ Success ⏳ Working on it ❌ Broken
 
-- Create a proper front-end ❌
-
-- Downloads ❌
+- Downloads ⏳
 
 - Optimize ffmpeg for the best performance ✔️
 
 - Find a way to make Spotify work ✔️
 
 - Clean up code and fix UI on server ✔️
+
+- Create a proper front-end ✔️
 
 - Add more sites ⏳
 

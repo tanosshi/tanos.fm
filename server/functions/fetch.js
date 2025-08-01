@@ -98,31 +98,21 @@ router.post("/", async (req, res) => {
       mediaType: "unknown",
     };
 
-    if (
-      (!url.includes("https://") && !url.includes("http://")) ||
-      !url.includes(":/")
-    ) {
-      toggleAnime = true;
-      logData.mediaType = "anime";
-    }
-
     if (!url || typeof url !== "string") {
       if (!toggleAnime) {
         return res.status(400).json({
           valid: false,
-          message: "Please enter a URL",
+          message: "Please enter a valid URL",
         });
       }
     }
 
     const isValid = isValidUrl(url.trim());
     if (!isValid) {
-      if (!toggleAnime) {
-        return res.status(400).json({
-          valid: false,
-          message: "Invalid or unsupported URL",
-        });
-      }
+      return res.status(400).json({
+        valid: false,
+        message: "Invalid or unsupported URL",
+      });
     }
 
     let mediaInfo;

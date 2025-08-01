@@ -1,110 +1,5 @@
 import React, { useState, useEffect } from "react";
-
-const scrollbarStyles = `
-  html {
-    scroll-behavior: smooth;
-  }
-  ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-  }
-  ::-webkit-scrollbar-track {
-    background: rgba(10, 10, 10, 0.3);
-    border: 1px solid rgba(51, 51, 51, 0.5);
-    border-radius: 4px;
-    backdrop-filter: blur(8px);
-  }
-  ::-webkit-scrollbar-thumb {
-    background: rgba(34, 34, 34, 0.7);
-    border-radius: 4px;
-    border: 1px solid rgba(68, 68, 68, 0.5);
-    backdrop-filter: blur(8px);
-  }
-  ::-webkit-scrollbar-thumb:hover {
-    background: rgba(42, 42, 42, 0.8);
-  }
-  * {
-    scrollbar-width: thin;
-    scrollbar-color: rgba(34, 34, 34, 0.7) rgba(10, 10, 10, 0.3);
-  }
-`;
-
-const getSelectionStyles = (theme) => `
-  ::selection {
-    background-color: ${theme.accent}33;
-    color: ${theme.accent};
-  }
-  ::-moz-selection {
-    background-color: ${theme.accent}33;
-    color: ${theme.accent};
-  }
-`;
-
-const themes = [
-  {
-    name: "Dark",
-    bg: "#0a0a0a",
-    card: "#111111",
-    cardInner: "#161616",
-    accent: "#f83858",
-    border: "#333333",
-    emoji: "🌸",
-  },
-  {
-    name: "AMOLED",
-    bg: "#000000",
-    card: "#000000",
-    cardInner: "#0a0a0a",
-    accent: "#ffffff",
-    border: "#222222",
-    emoji: "🌸",
-  },
-  {
-    name: "tanos's pink",
-    bg: "#1a121a",
-    card: "#251a25",
-    cardInner: "#351f35",
-    accent: "#ff80bf",
-    border: "#4a2d4a",
-    emoji: "🌸",
-    backgroundImage: "puresakura.png",
-    backgroundBlur: "25px",
-  },
-  {
-    name: "Turquoise",
-    bg: "#0a2a2f",
-    card: "#0e3339",
-    cardInner: "#124045",
-    accent: "#40e0d0",
-    border: "#1a5761",
-    emoji: "🌊",
-    backgroundImage: "puresakura.png",
-    backgroundBlur: "25px",
-  },
-  {
-    name: "Forest",
-    bg: "#0c1a0f",
-    card: "#1a2f1d",
-    cardInner: "#2a472e",
-    accent: "#7fff7f",
-    border: "#345439",
-    emoji: "🌿",
-    backgroundImage: "puresakura.png",
-    backgroundBlur: "40px",
-  },
-  {
-    name: "Purple",
-    bg: "#1a0c1a",
-    card: "#2f1a2f",
-    cardInner: "#472e47",
-    accent: "#e07fff",
-    border: "#543954",
-    emoji: "💜",
-    backgroundImage: "purple.png",
-    backgroundBlur: "10px",
-  },
-];
-
+// theres no way im documenting this
 console.log(
   `\x1b[94m%s\x1b[0m`,
   `⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠿⠿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
@@ -133,6 +28,84 @@ console.log(
 ⣧⣤⣤⠀⠀⠀⢸⣿⣷⣜⣿⣿⣿⣿⣿⣿⡿⠻⠋⡀⠀⠀⢳⣮⣝⡻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
 ⡇⢹⡇⠀⠀⠀⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿⠁⠀⢰⣿⣄⠀⠈⠻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿\n<========================================================<\n          By @tanossh.i on discord, or just tanos.\n>========================================================>`
 );
+
+const getSelectionStyles = (theme) => `
+  ::selection {
+    background-color: ${theme.accent}33;
+    color: ${theme.accent};
+  }
+  ::-moz-selection {
+    background-color: ${theme.accent}33;
+    color: ${theme.accent};
+  }
+`;
+
+const themes = [
+  {
+    name: "Dark",
+    bg: "#0a0a0a",
+    card: "#111111",
+    cardInner: "#161616",
+    accent: "#f83858",
+    border: "#333333",
+    emoji: "🌸",
+    backgroundImage: "hero-bg.jpg",
+    backgroundBlur: "25px",
+  },
+  {
+    name: "AMOLED",
+    bg: "#000000",
+    card: "#000000",
+    cardInner: "#0a0a0a",
+    accent: "#ffffff",
+    border: "#222222",
+    emoji: "🌸",
+  },
+  {
+    name: "tanos's pink",
+    bg: "#1a121a",
+    card: "#251a25",
+    cardInner: "#351f35",
+    accent: "#ff80bf",
+    border: "#4a2d4a",
+    emoji: "🌸",
+    backgroundImage: "/images/puresakura.png",
+    backgroundBlur: "25px",
+  },
+  {
+    name: "Turquoise",
+    bg: "#0a2a2f",
+    card: "#0e3339",
+    cardInner: "#124045",
+    accent: "#40e0d0",
+    border: "#1a5761",
+    emoji: "🌊",
+    backgroundImage: "/images/puresakura.png",
+    backgroundBlur: "25px",
+  },
+  {
+    name: "Forest",
+    bg: "#0c1a0f",
+    card: "#1a2f1d",
+    cardInner: "#2a472e",
+    accent: "#7fff7f",
+    border: "#345439",
+    emoji: "🌿",
+    backgroundImage: "./images/puresakura.png",
+    backgroundBlur: "40px",
+  },
+  {
+    name: "Purple",
+    bg: "#1a0c1a",
+    card: "#2f1a2f",
+    cardInner: "#472e47",
+    accent: "#e07fff",
+    border: "#543954",
+    emoji: "💜",
+    backgroundImage: "/images/purple.png",
+    backgroundBlur: "10px",
+  },
+];
 
 function App() {
   const [isLoading, setIsLoading] = useState(false);
@@ -210,6 +183,14 @@ function App() {
 
   const cycleTheme = () => {
     const newIndex = (currentThemeIndex + 1) % themes.length;
+    const preloadIndex = (newIndex + 1) % themes.length;
+    const preloadTheme = themes[preloadIndex];
+
+    if (preloadTheme.backgroundImage) {
+      const img = new Image();
+      img.src = preloadTheme.backgroundImage;
+    }
+
     setCurrentThemeIndex(newIndex);
     localStorage.setItem("selectedTheme", newIndex.toString());
   };
@@ -219,7 +200,6 @@ function App() {
   useEffect(() => {
     const style = document.createElement("style");
     style.textContent = `
-      ${scrollbarStyles}
       ${getSelectionStyles(currentTheme)}
 
       @import url('https://fonts.googleapis.com/css2?family=Inconsolata:wght@300;400;500;600&display=swap');
@@ -369,7 +349,13 @@ function App() {
   };
 
   const fetchData = async () => {
-    if (result.toLowerCase() === "help") {
+    let lowerResults = result.toLowerCase();
+    if (
+      lowerResults === "help" ||
+      lowerResults === "commands" ||
+      lowerResults === "cmds" ||
+      lowerResults === "services"
+    ) {
       return setShowSupported(true);
     }
 
@@ -381,13 +367,12 @@ function App() {
       });
       return;
     }
+    setIsLoading(true);
 
     if (mediaInfo) {
       setShowDownloadPanel(false);
       await new Promise((resolve) => setTimeout(resolve, 1200));
     }
-
-    setIsLoading(true);
     setMediaInfo(null);
     setShowSupported(false);
 
@@ -406,10 +391,12 @@ function App() {
         message: "Rate limit exceeded. Please wait before trying again.",
         isValid: false,
       });
+      setIsLoading(false);
       return;
     }
 
     const responseData = await response.json();
+    setIsLoading(false);
 
     if (!responseData.valid) {
       if (responseData.message && responseData.message.includes("too long")) {
@@ -426,6 +413,7 @@ function App() {
           isValid: false,
         });
       }
+      setIsLoading(false);
       return;
     }
 
@@ -443,6 +431,7 @@ function App() {
     } else {
       throw new Error("No media info received from server");
     }
+    setIsLoading(false);
   };
 
   useEffect(() => {
@@ -499,7 +488,7 @@ function App() {
 
   return (
     <div
-      className="flex items-center justify-center min-h-screen w-full relative overflow-x-hidden"
+      className="flex items-center justify-center min-h-screen w-full relative overflow-x-hidden scale-[0.6] sm:scale-60"
       style={{
         backgroundColor: currentTheme.bg,
         backgroundImage: currentTheme.backgroundImage
@@ -809,24 +798,16 @@ function App() {
                         🎬
                       </span>
                       <div>
-                        <p className="text-sm sm:text-base text-gray-200">
-                          Youtube
+                        <p
+                          className="text-sm sm:text-base text-gray-200"
+                          style={{
+                            fontSize: "0.9rem",
+                          }}
+                        >
+                          Youtube (+ music)
                         </p>
                         <p className="text-xs sm:text-sm text-gray-400">
                           Videos & Premium Music
-                        </p>
-                      </div>
-                    </div>
-                    <div
-                      onClick={() => setSelectedPlatform("youtube-music")}
-                      className="flex items-center gap-2 p-3 bg-[#161616]/70 backdrop-blur-md rounded-lg border border-[#333333]/50 hover:border-[#444444]/70 transition-colors cursor-pointer hover:bg-[#161616]/80 relative"
-                    >
-                      <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-green-500/20"></div>
-                      <span className="text-xl">🎶</span>
-                      <div>
-                        <p className="text-gray-200">Youtube Music</p>
-                        <p className="text-xs text-gray-400">
-                          Songs (& Playlists in the future)
                         </p>
                       </div>
                     </div>
@@ -837,7 +818,14 @@ function App() {
                       <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-green-500/20"></div>
                       <span className="text-xl">☁️</span>
                       <div>
-                        <p className="text-gray-200">Soundcloud</p>
+                        <p
+                          className="text-gray-200"
+                          style={{
+                            fontSize: "0.9rem",
+                          }}
+                        >
+                          Soundcloud
+                        </p>
                         <p className="text-xs text-gray-400">Tracks</p>
                       </div>
                     </div>
@@ -848,21 +836,15 @@ function App() {
                       <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-green-500/20"></div>
                       <span className="text-xl">💚</span>
                       <div>
-                        <p className="text-gray-200">Spotify</p>
-                        <p className="text-xs text-gray-400">Songs only</p>
-                      </div>
-                    </div>
-                    <div
-                      onClick={() => setSelectedPlatform("anime")}
-                      className="flex items-center gap-2 p-3 bg-[#161616]/70 backdrop-blur-md rounded-lg border border-[#333333]/50 hover:border-[#444444]/70 transition-colors cursor-pointer hover:bg-[#161616]/80 relative"
-                    >
-                      <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-orange-500/20"></div>
-                      <span className="text-xl">🍿</span>
-                      <div>
-                        <p className="text-gray-200">Animes</p>
-                        <p className="text-xs text-gray-400">
-                          (Some animes are restricted)
+                        <p
+                          className="text-gray-200"
+                          style={{
+                            fontSize: "0.7rem",
+                          }}
+                        >
+                          Spotify
                         </p>
+                        <p className="text-xs text-gray-400">Songs only</p>
                       </div>
                     </div>
                     <div
@@ -872,7 +854,14 @@ function App() {
                       <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-green-500/20"></div>
                       <span className="text-xl">📝</span>
                       <div>
-                        <p className="text-gray-200">Lyrics</p>
+                        <p
+                          className="text-gray-200"
+                          style={{
+                            fontSize: "0.7rem",
+                          }}
+                        >
+                          Lyrics
+                        </p>
                         <p className="text-xs text-gray-400">
                           After music link grabbed
                         </p>
@@ -885,7 +874,12 @@ function App() {
                       <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-green-500/20"></div>
                       <span className="text-xl">🌐</span>
                       <div>
-                        <p className="text-gray-200">
+                        <p
+                          className="text-gray-200"
+                          style={{
+                            fontSize: "0.7rem",
+                          }}
+                        >
                           Tiktok, Twitter & Instagram
                         </p>
                         <p className="text-xs text-gray-400">Short Videos</p>
@@ -912,8 +906,6 @@ function App() {
                     >
                       <h3 className="text-xl font-semibold text-gray-200">
                         {selectedPlatform === "youtube" && "🎬 YouTube"}
-                        {selectedPlatform === "youtube-music" &&
-                          "🎶 YouTube Music"}
                         {selectedPlatform === "soundcloud" && "☁️ SoundCloud"}
                         {selectedPlatform === "spotify" && "💚 Spotify"}
                         {selectedPlatform === "anime" && "🍿 Animes"}
@@ -922,27 +914,26 @@ function App() {
                       </h3>
                     </div>
                     <div className="space-y-4 text-left">
-                      <p className="text-gray-300">
+                      <p
+                        className="text-gray-300"
+                        style={{ fontSize: "0.7rem" }}
+                      >
                         {selectedPlatform === "youtube" &&
-                          "Downloading YouTube videos is a quite simple step as it only requires ytdl-core for scraping information and the ruhend-scraper for downloading the video."}
-                        {selectedPlatform === "youtube-music" &&
-                          "Downloading MP3 from Youtube Music was a quite hard thing to do, as we start with ytdl-core for scraping information, ruhend-scraper for downloading the non-converted audio file, Last.FM for the artwork or image buffering, and finally ffmpeg for converting the audio file to a proper mp3 with the artwork added. This may be the reason downloads will take a couple extra seconds"}
+                          "Downloading YouTube videos is a quite simple step as it only requires ytdl-core for scraping information and the ruhend-scraper for downloading the video, Downloading MP3 from Youtube Music was a quite hard thing to do, as we start with ytdl-core for scraping information, ruhend-scraper for downloading the non-converted audio file, Last.FM for the artwork or image buffering, and finally ffmpeg for converting the audio file to a proper mp3 with the artwork added. This may be the reason downloads will take a couple extra seconds."}
                         {selectedPlatform === "soundcloud" &&
                           "Download tracks via soundcloud using scdl (soundcloud-downloader) package, which automatically handles the covers whereby the downloads are instant. Downloads are done with the soundcloud.com base url."}
                         {selectedPlatform === "spotify" &&
-                          "Spotify songs are scraped via the query package and the official spotify docs. The songs are downloaded via the youtube-music api while searching for the best results. Downloads will take a couple extra seconds."}
-                        {selectedPlatform === "anime" &&
-                          "Animes are not hosted by us, but by the site kayoanime.com. We only provide the links to the direct episodes. We do not host any content, nor do we host any servers for any anime ever. This is where you will be taken to a google drive link for downloads."}
+                          "Spotify songs are scraped via the query package and the official spotify package. The songs are downloaded via the youtube-music api while searching for the best results. Downloads will take a couple extra seconds."}
                         {selectedPlatform === "lyrics" &&
                           "Lyrics are grabbed using LrcLib, QQ Music, and NetEase."}
                         {selectedPlatform === "social" &&
                           "We use ruhend-scraper for downloading videos."}
                       </p>
                     </div>
-                    <div className="absolute bottom-[15%] left-1/2 -translate-x-1/2 w-[75%]">
+                    <div className="absolute bottom-[5%] left-1/2 -translate-x-1/2 w-[75%]">
                       <button
                         onClick={() => setSelectedPlatform(null)}
-                        className="w-full px-4 py-2 bg-[#161616]/70 backdrop-blur-md rounded-lg border border-[#333333]/50 hover:border-[#444444]/70 transition-colors cursor-pointer text-gray-200"
+                        className="w-full px-3 py-2 bg-[#161616]/70 backdrop-blur-md rounded-lg border border-[#333333]/50 hover:border-[#444444]/70 transition-colors cursor-pointer text-gray-200"
                       >
                         Back to the supported platform list
                       </button>
@@ -1276,7 +1267,7 @@ function App() {
                         id="tracker-text"
                         className="w-full p-3 rounded-lg bg-[#0a0a0a]/60 backdrop-blur-lg border border-[#333333]/50 text-gray-200 resize-none focus:outline-none focus:border-[#444444]/70 transition-colors placeholder-gray-500 text-xs sm:text-base"
                         rows="1"
-                        placeholder="Enter your link or anime title here..."
+                        placeholder="Enter any supported type of link in here..."
                         value={result}
                         onChange={handleInputChange}
                         onKeyDown={handleKeyDown}
@@ -1776,6 +1767,8 @@ function App() {
             <button
               onClick={() => {
                 setShowDonationMenu(true);
+                setMediaInfo(null);
+                setShowSupported(false);
               }}
               className="text-gray-400 hover:text-gray-200 transition-colors text-sm flex items-center gap-2 cursor-pointer"
             >
@@ -1803,7 +1796,7 @@ function App() {
         </div>
       </div>
       <div className="absolute bottom-5 right-7 text-gray-200 text-sm z-11 opacity-7 hidden sm:block">
-        v0.9.b7
+        v0.9.stable_beta98
       </div>
     </div>
   );
