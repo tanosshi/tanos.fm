@@ -6,3 +6,4 @@
 # Enviroment Variables
 /client/.env
 /server/.env
+/client/build

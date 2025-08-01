@@ -522,18 +522,6 @@ app.post("/fetch", async (req, res) => {
   switch (true) {
     case url.includes("nsfw_content"):
       return res.status(400).json({valid: false, message: "Downloading NSFW media is not allowed for free users."});
-    case url.toLowerCase() === "fuck you":
-      return res.status(400).json({valid: false, message: "fuck you too"});
-    case url.toLowerCase() === "bitch":
-      return res.status(400).json({valid: false, message: "you the bitch"});
-    case url.toLowerCase() === "retard":
-      return res.status(400).json({valid: false, message: "kys"});
-    case url.toLowerCase().includes("nigga"):
-      return res.status(400).json({valid: false, message: "nigga is not allowed"});
-    case url.toLowerCase() == "kys":
-      return res.status(400).json({valid: false, message: "kill yourself"});
-    case url.toLowerCase() == "kill yourself":
-      return res.status(400).json({valid: false, message: "kys !!!"});
     case url.toLowerCase() == "hi":
       return res.status(400).json({valid: false, message: "heelloooo"});
   }
