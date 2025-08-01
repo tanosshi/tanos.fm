@@ -1,1 +1,0 @@
-console.log("[!] Do not run this file via 'node .' or anything similar, use 'npm run' or 'npm run dev' instead because this code uses 2 processes.")
