@@ -1,18 +1,17 @@
 {
   "name": "tanos.fm",
-  "version": "1.1.0",
+  "version": "1.3.0",
   "description": "A quick yet ad-free media downloader",
   "main": "index.js",
   "scripts": {
-    "start": "concurrently \"cd server && npm start\" \"cd client && npm start\"",
-    "dev": "concurrently \"cd server && npm start\" \"cd client && npm start\"",
-    "install-deps": "concurrently \"cd server && npm install\" \"cd client && npm install\" \"npm install\"",
-    "build": "cd client && npm run build",
-    "server": "cd server && npm start",
-    "client": "cd client && npm start"
+    "start": "npm run build --prefix client && node server/index.js",
+    "postinstall": "npm install --prefix client && npm install --prefix server",
+    "install-deps": "npm install concurrently && concurrently \"cd server && npm install\" \"cd client && npm install\" \"npm install\" && npm run postinstall",
+    "build": "cd client && npm run build"
   },
   "dependencies": {
     "axios": "^1.8.3",
+    "caniuse-lite": "^1.0.30001731",
     "cheerio": "^1.0.0",
     "concurrently": "^8.2.2",
     "dotenv": "^16.4.7",

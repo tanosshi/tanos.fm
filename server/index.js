@@ -1,5 +1,5 @@
-'use strict';
-require('dotenv').config();
+"use strict";
+require("dotenv").config();
 
 const express = require("express");
 const cors = require("cors");
@@ -11,29 +11,29 @@ const rateLimiter = (req, res, next) => {
   const now = Date.now();
   const sec = 6 * 10;
   const windowMs = sec * 1000;
-  const maxRequests = sec / 10 + (1 * 10); // making sure it's not too much
+  const maxRequests = sec / 10 + 1 * 10;
 
   const requests = rateLimitStore.get(ip) || [];
-  
-  const recentRequests = requests.filter(time => now - time < windowMs);
-  
+
+  const recentRequests = requests.filter((time) => now - time < windowMs);
+
   if (recentRequests.length >= maxRequests) {
     const oldestRequest = recentRequests[0];
     const timeLeft = Math.ceil((windowMs - (now - oldestRequest)) / 1000);
-    
+
     return res.status(429).json({
       valid: false,
       message: `Rate limit exceeded. Please wait ${timeLeft} seconds before trying again.`,
-      timeLeft
+      timeLeft,
     });
   }
-  
+
   recentRequests.push(now);
   rateLimitStore.set(ip, recentRequests);
-  
+
   if (Math.random() < 0.01) {
     for (const [ip, requests] of rateLimitStore.entries()) {
-      const recent = requests.filter(time => now - time < windowMs);
+      const recent = requests.filter((time) => now - time < windowMs);
       if (recent.length === 0) {
         rateLimitStore.delete(ip);
       } else {
@@ -41,24 +41,20 @@ const rateLimiter = (req, res, next) => {
       }
     }
   }
-  
+
   next();
 };
 
-/////// ===== Youtube ===== ///////
-const ytdl = require("ytdl-core");
-const { ytmp3, ytmp4, ttdl, igdl } = require("ruhend-scraper"); 
+const ytdl = require("@distube/ytdl-core");
+const { ytmp3, ytmp4, ttdl, igdl } = require("ruhend-scraper");
 const YouTube = require("youtube-sr").default;
 
-/////// ===== Spotify ===== ///////
 const querystring = require("querystring");
 const SPOTIFY_CLIENT_ID = process.env.SPOTIFY_CLIENT_ID;
 const SPOTIFY_CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET;
 
-/////// ===== SoundCloud ===== ///////
-const scdl = require('soundcloud-downloader').default;
+const scdl = require("soundcloud-downloader").default;
 
-/////// ===== File Editing ===== ///////
 const fs = require("fs");
 const axios = require("axios");
 const path = require("path");
@@ -68,22 +64,194 @@ const crypto = require("crypto");
 const ffmpeg = require("fluent-ffmpeg");
 const { Readable } = require("stream");
 
-/////// ===== Twitter ===== ///////
 const { TwitterDL } = require("twitter-downloader");
 
-/////// ===== Anime ===== ///////
-const fetch = require('node-fetch');
-const cheerio = require('cheerio');
-const tinyurl = require('tinyurl');
+const fetch = require("node-fetch");
+const cheerio = require("cheerio");
+const tinyurl = require("tinyurl");
 
-/////// ===== Lyrics ===== ///////
 const { Client } = require("lrclib-api");
 const lrcClient = new Client();
 
-/////// ===== Server ===== ///////
 const app = express();
+
 app.use(cors());
 app.use(express.json());
+
+app.use(express.static(path.join(__dirname, "..", "client", "build")));
+
+app.post("/fetch", async (req, res) => {
+  const { url } = req.body;
+  switch (true) {
+    case url.includes("nsfw_content"):
+      return res.status(400).json({
+        valid: false,
+        message: "Downloading NSFW media is not allowed for free users.",
+      });
+    case url.toLowerCase() == "hi":
+      return res.status(400).json({ valid: false, message: "heelloooo" });
+  }
+
+  let toggleAnime = false;
+  try {
+    const logData = {
+      url: url,
+      userIP: rateLimitStore.get(req.ip) || req.ip,
+      success: false,
+      mediaType: "unknown",
+    };
+
+    if (
+      (!url.includes("https://") && !url.includes("http://")) ||
+      !url.includes(":/")
+    ) {
+      toggleAnime = true;
+      logData.mediaType = "anime";
+    }
+
+    if (!url || typeof url !== "string") {
+      if (!toggleAnime) {
+        return res.status(400).json({
+          valid: false,
+          message: "Please enter a URL",
+        });
+      }
+    }
+
+    const isValid = isValidUrl(url.trim());
+    if (!isValid) {
+      if (!toggleAnime) {
+        return res.status(400).json({
+          valid: false,
+          message: "Invalid or unsupported URL",
+        });
+      }
+    }
+
+    let mediaInfo;
+    const isMusic = url.includes("music.youtube.com");
+    const isFromSpotify = url.includes("spotify.com");
+    const isFromSoundCloud = url.includes("soundcloud.com");
+
+    if (url.includes("youtube.com") || url.includes("youtu.be")) {
+      logData.mediaType = "youtube";
+      mediaInfo = await getYoutubeInfo(url, isMusic);
+    } else if (isFromSpotify) {
+      logData.mediaType = "spotify";
+      const trackIdMatch = url.match(/track\/([a-zA-Z0-9]+)/);
+      if (!trackIdMatch || !trackIdMatch[1]) {
+        return res.status(400).json({
+          valid: false,
+          message: "Invalid Spotify URL format",
+        });
+      }
+
+      const trackId = trackIdMatch[1];
+      const accessToken = await getSpotifyAccessToken();
+      mediaInfo = await getSpotifyInfo(trackId, accessToken);
+    } else if (isFromSoundCloud) {
+      logData.mediaType = "soundcloud";
+      if (url.includes("/sets") || url.includes("/playlists")) {
+        return res.status(400).json({
+          valid: false,
+          message: "SoundCloud sets and playlists are not supported",
+        });
+      }
+      mediaInfo = await getSoundCloudInfo(url);
+    } else if (url.includes("tiktok.com")) {
+      logData.mediaType = "tiktok";
+      const tiktokData = await ttdl(url);
+      const randomNumber = Math.floor(Math.random() * 6) + 5;
+
+      mediaInfo = {
+        title: tiktokData.title,
+        duration: tiktokData.published,
+        quality: "HD",
+        size: "~" + randomNumber + " MB",
+        url: tiktokData.video,
+        isTikTok: true,
+        likes: tiktokData.like,
+        comments: tiktokData.comment,
+        bookmark: tiktokData.bookmark,
+        views: tiktokData.views,
+        author: tiktokData.author,
+        username: tiktokData.username,
+        profilePicture: tiktokData.avatar,
+        thumbnail: tiktokData.cover,
+      };
+    } else if (url.includes("instagram.com")) {
+      logData.mediaType = "instagram";
+      const instagramData = await igdl(url);
+      let igdata = await instagramData.data;
+
+      mediaInfo = {
+        title: "Instagram Media",
+        url: igdata[0].url,
+        isAnime: true,
+      };
+    } else if (url.includes("twitter.com") || url.includes("x.com")) {
+      logData.mediaType = "twitter";
+      try {
+        const result = await TwitterDL(url);
+        console.log("Twitter result:", result);
+        mediaInfo = {
+          title: result.result.description || "Twitter Media",
+          url: result.result.media[0].url || url,
+          isTwitter: true,
+          author: result.result.author.bio || "Twitter User",
+          username: result.result.author.username || "user",
+          profilePicture:
+            result.result.author.profileImageUrl ||
+            "https://abs.twimg.com/sticky/default_profile_images/default_profile.png",
+          likes: result.result.statistics.favoriteCount || 0,
+          retweets: result.result.statistics.retweetCount || 0,
+          replies: result.result.statistics.replieCount || 0,
+          views: result.result.statistics.viewCount || 0,
+        };
+      } catch (error) {
+        console.error("Twitter download error:", error);
+        return res.status(400).json({
+          valid: false,
+          message: "Downloading NSFW media is not allowed for free users.",
+        });
+      }
+    }
+    if (toggleAnime) {
+      logData.mediaType = "anime";
+      mediaInfo = await getAnimeInfo(url);
+    }
+
+    logData.success = true;
+
+    logToHistory(logData);
+
+    return res.status(200).json({
+      valid: true,
+      message: "Valid URL detected!",
+      mediaInfo,
+      isFromSpotify,
+      isFromSoundCloud,
+    });
+  } catch (error) {
+    logToHistory({
+      url: req.body.url,
+      userIP: req.ip,
+      success: false,
+      mediaType: "error",
+      error: error.message,
+    });
+
+    console.error("Server error:", error);
+    return res.status(500).json({
+      valid: false,
+      message: error.message || "Error processing URL. Please try again.",
+    });
+  }
+});
+
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "..", "client", "build", "index.html"));
+});
 
 app.use(rateLimiter);
 
@@ -94,29 +262,32 @@ const cleanupTempFiles = () => {
   const tempFilePatterns = [
     /^temp_cover_.*\.png$/,
     /^temp_output.*$/,
-    /^temp_.*\.mp3$/
+    /^temp_.*\.mp3$/,
   ];
 
   const dirsToCheck = [
-    '..',
-    '.',
-    '/',
-    './server',
-    './client',
-    '../server',
-    '../client'
+    "..",
+    ".",
+    "/",
+    "./server",
+    "./client",
+    "../server",
+    "../client",
   ];
 
-  dirsToCheck.forEach(dir => {
+  dirsToCheck.forEach((dir) => {
     fs.readdir(dir, (err, files) => {
-      if (err) return; //mightve been the wind
+      if (err) return;
 
-      files.forEach(file => {
-        if (tempFilePatterns.some(pattern => pattern.test(file))) {
+      files.forEach((file) => {
+        if (tempFilePatterns.some((pattern) => pattern.test(file))) {
           const filePath = path.join(dir, file);
-          fs.unlink(filePath, err => {
-            if (err && err.code !== 'ENOENT') {
-              console.error(`Critical error deleting temp file ${filePath}:`, err);
+          fs.unlink(filePath, (err) => {
+            if (err && err.code !== "ENOENT") {
+              console.error(
+                `Critical error deleting temp file ${filePath}:`,
+                err
+              );
             }
           });
         }
@@ -141,10 +312,10 @@ function isValidUrl(url) {
       "tiktok.com",
       "instagram.com",
       "twitter.com",
-      "x.com"
+      "x.com",
     ];
     const hostname = new URL(url).hostname;
-    return supportedDomains.some(domain => hostname.includes(domain));
+    return supportedDomains.some((domain) => hostname.includes(domain));
   } catch (err) {
     return false;
   }
@@ -152,66 +323,41 @@ function isValidUrl(url) {
 
 async function getYoutubeInfo(url, isMusic = false) {
   try {
-    const info = await ytdl.getBasicInfo(url, {
-      requestOptions: {
-        headers: {
-          "User-Agent":
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-          Accept:
-            "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-          "Accept-Language": "en-US,en;q=0.5"
-        }
-      }
-    });
+    if (!ytdl.validateURL(url)) {
+      throw new Error("Invalid YouTube URL");
+    }
 
-    // Check video duration (30 minutes = 1800 seconds)
+    console.log("Fetching video info...");
+    const info = await ytdl.getInfo(ytdl.getURLVideoID(url));
+
+    if (!info || !info.formats || !info.formats.length) {
+      console.error("Failed to retrieve valid video formats.");
+      throw new Error(
+        "Could not retrieve video formats. The video may be region-locked or unavailable."
+      );
+    }
+
     const durationInSeconds = parseInt(info.videoDetails.lengthSeconds);
     const isLongVideo = durationInSeconds > 1800;
 
-    let formats = info.formats;
     let bestFormat;
 
     if (isMusic) {
-      const audioOnlyFormats = formats.filter(f => f.hasAudio && !f.hasVideo);
-      const combinedFormats = formats.filter(f => f.hasAudio && f.hasVideo);
-      const anyAudioFormats = formats.filter(f => f.hasAudio);
-
-      formats =
-        audioOnlyFormats.length > 0
-          ? audioOnlyFormats
-          : combinedFormats.length > 0
-            ? combinedFormats
-            : anyAudioFormats.length > 0 ? anyAudioFormats : formats;
-
-      bestFormat = formats.reduce((prev, current) => {
-        if (!prev) return current;
-
-        if (!prev.audioBitrate && current.audioBitrate) return current;
-        if (prev.audioBitrate && !current.audioBitrate) return prev;
-
-        const prevBitrate = prev.audioBitrate || 0;
-        const currentBitrate = current.audioBitrate || 0;
-        return currentBitrate > prevBitrate ? current : prev;
-      }, formats[0]);
+      bestFormat = ytdl.chooseFormat(info.formats, {
+        quality: "highestaudio",
+      });
     } else {
-      const combinedFormats = formats.filter(f => f.hasVideo && f.hasAudio);
-      const videoOnlyFormats = formats.filter(f => f.hasVideo);
+      bestFormat = ytdl.chooseFormat(info.formats, {
+        quality: "highest",
+        filter: "audioandvideo",
+      });
 
-      formats =
-        combinedFormats.length > 0
-          ? combinedFormats
-          : videoOnlyFormats.length > 0 ? videoOnlyFormats : formats;
-
-      bestFormat = formats.reduce((prev, current) => {
-        if (!prev) return current;
-
-        if (!prev.height && current.height) return current;
-        if (prev.height && !current.height) return prev;
-
-        const prevHeight = prev.height || 0;
-        const currentHeight = current.height || 0;
-        return currentHeight > prevHeight ? current : prev;
-      }, formats[0]);
+      if (!bestFormat) {
+        bestFormat = ytdl.chooseFormat(info.formats, {
+          quality: "highest",
+          filter: "video",
+        });
+      }
     }
 
     if (!bestFormat) {
@@ -225,10 +371,9 @@ async function getYoutubeInfo(url, isMusic = false) {
         1
       )} MB`;
     } else {
-      const durationInSeconds = parseInt(info.videoDetails.lengthSeconds);
       if (isMusic) {
         const bitrate = bestFormat.audioBitrate || 128;
-        const sizeInBytes = bitrate * 1000 * durationInSeconds / 8;
+        const sizeInBytes = (bitrate * 1000 * durationInSeconds) / 8;
         estimatedSize = `~${(sizeInBytes / 1024 / 1024).toFixed(1)} MB`;
       } else {
         const qualityMultiplier = {
@@ -239,30 +384,37 @@ async function getYoutubeInfo(url, isMusic = false) {
           "720p": 45,
           "1080p": 90,
           "1440p": 150,
-          "2160p": 300
-        }; // because i cant be bothered to do it right
+          "2160p": 300,
+        };
 
         let multiplier = 45;
         if (bestFormat.qualityLabel) {
           const quality = bestFormat.qualityLabel.toLowerCase();
           for (const [label, value] of Object.entries(qualityMultiplier)) {
-            if (quality.includes(label.toLowerCase())) {
+            if (quality.includes(label.replace("p", ""))) {
               multiplier = value;
               break;
             }
           }
         }
 
-        const sizeInMB = multiplier * durationInSeconds / 60;
+        const sizeInMB = (multiplier * durationInSeconds) / 60;
         estimatedSize = `~${sizeInMB.toFixed(1)} MB`;
       }
     }
 
+    const thumbnail =
+      info.videoDetails.thumbnails && info.videoDetails.thumbnails.length > 0
+        ? info.videoDetails.thumbnails[info.videoDetails.thumbnails.length - 1]
+            .url
+        : null;
+
     return {
       title:
         info.videoDetails.title +
-        " - " +
-        info.videoDetails.author.name.replace(" - Topic", ""),
+        (info.videoDetails.author?.name
+          ? " - " + info.videoDetails.author.name.replace(" - Topic", "")
+          : ""),
       duration: new Date(parseInt(info.videoDetails.lengthSeconds) * 1000)
         .toISOString()
         .substr(11, 8),
@@ -270,19 +422,22 @@ async function getYoutubeInfo(url, isMusic = false) {
         ? bestFormat.audioBitrate
           ? `${bestFormat.audioBitrate}kbps`
           : bestFormat.audioQuality === "AUDIO_QUALITY_LOW"
-            ? "128kbps"
-            : bestFormat.audioQuality === "AUDIO_QUALITY_MEDIUM"
-              ? "192kbps"
-              : bestFormat.audioQuality === "AUDIO_QUALITY_HIGH"
-                ? "256kbps"
-                : "128kbps"
+          ? "128kbps"
+          : bestFormat.audioQuality === "AUDIO_QUALITY_MEDIUM"
+          ? "192kbps"
+          : bestFormat.audioQuality === "AUDIO_QUALITY_HIGH"
+          ? "256kbps"
+          : "128kbps"
         : `${bestFormat.qualityLabel || bestFormat.quality || "HD"}`,
       size: estimatedSize,
       hasLyrics: info.videoDetails.category === "Music",
-      thumbnail: info.videoDetails.thumbnails[0].url,
+      thumbnail: thumbnail,
       url: url,
       format: bestFormat,
-      durationError: isLongVideo ? "Video is too long. Maximum duration for MP4 download is 30 minutes." : null
+      downloadUrl: bestFormat.url,
+      durationError: isLongVideo
+        ? "Video is too long. Maximum duration for MP4 download is 30 minutes."
+        : null,
     };
   } catch (error) {
     console.error("Error getting YouTube info:", error);
@@ -295,6 +450,8 @@ async function getYoutubeInfo(url, isMusic = false) {
       error.message.includes("404")
     ) {
       throw new Error("Video not found");
+    } else if (error.message.includes("Invalid YouTube URL")) {
+      throw new Error("Invalid YouTube URL");
     }
     throw new Error("Could not fetch video information");
   }
@@ -304,16 +461,16 @@ async function getSpotifyInfo(url, accessToken) {
   const options = {
     url: `https://api.spotify.com/v1/tracks/${url}`,
     headers: {
-      Authorization: "Bearer " + accessToken
+      Authorization: "Bearer " + accessToken,
     },
-    json: true
+    json: true,
   };
 
   try {
     const response = await axios(options);
     const track = response.data;
     const searchQuery =
-      track.name + " " + track.artists.map(artist => artist.name).join(" ");
+      track.name + " " + track.artists.map((artist) => artist.name).join(" ");
 
     const youtubeUrl = await searchYouTubeMusicfromSpotify(searchQuery);
     if (!youtubeUrl) {
@@ -324,13 +481,13 @@ async function getSpotifyInfo(url, accessToken) {
 
     return {
       title: `${track.name} - ${track.artists
-        .map(artist => artist.name.replace(" - Topic", ""))
+        .map((artist) => artist.name.replace(" - Topic", ""))
         .join(", ")}`,
       duration: new Date(track.duration_ms).toISOString().substr(14, 5),
       quality: "320kbps",
       size: "~10 MB",
       url: urlWithHash,
-      isFromSpotify: true
+      isFromSpotify: true,
     };
   } catch (error) {
     console.error(
@@ -345,7 +502,7 @@ async function searchYouTubeMusicfromSpotify(searchQuery) {
   try {
     const results = await YouTube.search(searchQuery, {
       limit: 1,
-      type: "video"
+      type: "video",
     });
 
     if (results && results.length > 0) {
@@ -371,10 +528,10 @@ async function getSpotifyAccessToken() {
         Buffer.from(SPOTIFY_CLIENT_ID + ":" + SPOTIFY_CLIENT_SECRET).toString(
           "base64"
         ),
-      "Content-Type": "application/x-www-form-urlencoded"
+      "Content-Type": "application/x-www-form-urlencoded",
     },
     data: querystring.stringify({ grant_type: "client_credentials" }),
-    json: true
+    json: true,
   };
 
   try {
@@ -400,7 +557,7 @@ async function getSoundCloudInfo(url) {
       url: url,
       isFromSoundCloud: true,
       thumbnail: info.artwork_url || info.user.avatar_url,
-      author: info.user.username
+      author: info.user.username,
     };
   } catch (error) {
     console.error("Error getting SoundCloud info:", error);
@@ -415,67 +572,66 @@ async function getAnimeInfo(url) {
   try {
     let result = null;
 
-      const response = await axios.get(searchUrl);
-      const html = response.data;
-      const $ = cheerio.load(html);
+    const response = await axios.get(searchUrl);
+    const html = response.data;
+    const $ = cheerio.load(html);
 
-      searchUrl = `https://kayoanime.com/top-100-of-all-time-2021/`;
-      const topResponse = await axios.get(searchUrl);
-      const topHtml = topResponse.data;
-      const $top = cheerio.load(topHtml);
-      const firstResult = $('.posts-items > li:first-child > a').attr('href');
+    searchUrl = `https://kayoanime.com/top-100-of-all-time-2021/`;
+    const topResponse = await axios.get(searchUrl);
+    const topHtml = topResponse.data;
+    const $top = cheerio.load(topHtml);
+    const firstResult = $(".posts-items > li:first-child > a").attr("href");
 
-      if (firstResult.toLowerCase().includes("top")) { // Q1
-        console.log(`Top 100 URL: ${searchUrl}`);
-        $top('.toggle-head').each((index, element) => {
-          const title = $(element).text().trim();
-          const titleLower = title.toLowerCase();
-          console.log(`Top 100 titel: ${title}`);
-          
-          if (titleLower.includes(query.toLowerCase())) {
-            const link = $(element).parent().find('a').attr('href');
-            console.log(`Overeenkomende titel gevonden in top 100: ${title}`);
-            result = {
-              title: title,
-              link: link,
-              url: link,
-              isAnime: true,
-            };
-            return false;
-          }
-        });
-      } else { // Q2
-        if (firstResult) {
-          let titlez = firstResult
-            .replace("https://kayoanime.com/", "")
-            .replace("/", "")
-            .replace(/-/g, " ")
-            .replace("%20", " ")
-            .replace(/\b(\w)/g, (char) => char.toUpperCase())
-            .replace("Re ", "Re:")
-            .replace("Re: zero", "Re:ZERO")
-            .replace("zero", "Zero")
-            .split(" Episode")[0]
-            .split(" dual")[0]
-            .split(" sub")[0]
-            .split(" eng")[0]
-            .split(" raw")[0];
-  
+    if (firstResult.toLowerCase().includes("top")) {
+      console.log(`Top 100 URL: ${searchUrl}`);
+      $top(".toggle-head").each((index, element) => {
+        const title = $(element).text().trim();
+        const titleLower = title.toLowerCase();
+        console.log(`Top 100 titel: ${title}`);
+
+        if (titleLower.includes(query.toLowerCase())) {
+          const link = $(element).parent().find("a").attr("href");
+          console.log(`Overeenkomende titel gevonden in top 100: ${title}`);
           result = {
-            title: titlez,
-            link: firstResult,
-            url: firstResult,
+            title: title,
+            link: link,
+            url: link,
             isAnime: true,
           };
+          return false;
         }
-      }
-  
-      if (!result) {
-        console.log(`Geen resultaat gevonden.`);
-        return null;
-      }
-      return result;
+      });
+    } else {
+      if (firstResult) {
+        let titlez = firstResult
+          .replace("https://kayoanime.com/", "")
+          .replace("/", "")
+          .replace(/-/g, " ")
+          .replace("%20", " ")
+          .replace(/\b(\w)/g, (char) => char.toUpperCase())
+          .replace("Re ", "Re:")
+          .replace("Re: zero", "Re:ZERO")
+          .replace("zero", "Zero")
+          .split(" Episode")[0]
+          .split(" dual")[0]
+          .split(" sub")[0]
+          .split(" eng")[0]
+          .split(" raw")[0];
 
+        result = {
+          title: titlez,
+          link: firstResult,
+          url: firstResult,
+          isAnime: true,
+        };
+      }
+    }
+
+    if (!result) {
+      console.log(`Geen resultaat gevonden.`);
+      return null;
+    }
+    return result;
   } catch (error) {
     console.error("Fout tijdens het zoeken:", error);
     return null;
@@ -484,36 +640,34 @@ async function getAnimeInfo(url) {
 
 let toggleAnime = false;
 
-// Add history logging function
 function logToHistory(requestData) {
-  const historyPath = path.join(__dirname, 'history.json');
+  const historyPath = path.join(__dirname, "history.json");
   let history = [];
-  
+
   if (fs.existsSync(historyPath)) {
     try {
-      history = JSON.parse(fs.readFileSync(historyPath, 'utf8'));
+      history = JSON.parse(fs.readFileSync(historyPath, "utf8"));
     } catch (error) {
-      console.error('Error reading history.json:', error);
+      console.error("Error reading history.json:", error);
     }
   }
-  
+
   history.push({
     timestamp: new Date().toISOString(),
     url: requestData.url,
     success: requestData.success,
     mediaType: requestData.mediaType,
-    userIP: requestData.userIP
+    userIP: requestData.userIP,
   });
-  
+
   if (history.length > 1000) {
     history = history.slice(-1000);
   }
-  
-  // Write back to file
+
   try {
     fs.writeFileSync(historyPath, JSON.stringify(history, null, 2));
   } catch (error) {
-    console.error('Error writing to history.json:', error);
+    console.error("Error writing to history.json:", error);
   }
 }
 
@@ -521,65 +675,65 @@ app.post("/fetch", async (req, res) => {
   const { url } = req.body;
   switch (true) {
     case url.includes("nsfw_content"):
-      return res.status(400).json({valid: false, message: "Downloading NSFW media is not allowed for free users."});
+      return res.status(400).json({
+        valid: false,
+        message: "Downloading NSFW media is not allowed for free users.",
+      });
     case url.toLowerCase() == "hi":
-      return res.status(400).json({valid: false, message: "heelloooo"});
+      return res.status(400).json({ valid: false, message: "heelloooo" });
   }
 
   toggleAnime = false;
   try {
-    // Log data
     const logData = {
       url: url,
       userIP: rateLimitStore.get(req.ip) || req.ip,
       success: false,
-      mediaType: 'unknown'
+      mediaType: "unknown",
     };
 
-    // Checks for anime
-    if (!url.includes("https://") && !url.includes("http://") || !url.includes(":/")) {
+    if (
+      (!url.includes("https://") && !url.includes("http://")) ||
+      !url.includes(":/")
+    ) {
       toggleAnime = true;
-      logData.mediaType = 'anime';
+      logData.mediaType = "anime";
     }
 
-    // Toggles anime
     if (!url || typeof url !== "string") {
-      if(!toggleAnime) {
+      if (!toggleAnime) {
         return res.status(400).json({
           valid: false,
-          message: "Please enter a URL"
+          message: "Please enter a URL",
         });
       }
     }
 
-    // Checks if the url is valid
     const isValid = isValidUrl(url.trim());
     if (!isValid) {
-      if(!toggleAnime) {
+      if (!toggleAnime) {
         return res.status(400).json({
           valid: false,
-          message: "Invalid or unsupported URL"
+          message: "Invalid or unsupported URL",
         });
       }
     }
 
-    // Checks if the url is music
     let mediaInfo;
     const isMusic = url.includes("music.youtube.com");
     const isFromSpotify = url.includes("spotify.com");
     const isFromSoundCloud = url.includes("soundcloud.com");
 
-    // Checks if the url is youtube
     if (url.includes("youtube.com") || url.includes("youtu.be")) {
-      logData.mediaType = 'youtube';
+      logData.mediaType = "youtube";
       mediaInfo = await getYoutubeInfo(url, isMusic);
     } else if (isFromSpotify) {
-      logData.mediaType = 'spotify';
+      logData.mediaType = "spotify";
       const trackIdMatch = url.match(/track\/([a-zA-Z0-9]+)/);
       if (!trackIdMatch || !trackIdMatch[1]) {
         return res.status(400).json({
           valid: false,
-          message: "Invalid Spotify URL format"
+          message: "Invalid Spotify URL format",
         });
       }
 
@@ -587,16 +741,16 @@ app.post("/fetch", async (req, res) => {
       const accessToken = await getSpotifyAccessToken();
       mediaInfo = await getSpotifyInfo(trackId, accessToken);
     } else if (isFromSoundCloud) {
-      logData.mediaType = 'soundcloud';
+      logData.mediaType = "soundcloud";
       if (url.includes("/sets") || url.includes("/playlists")) {
         return res.status(400).json({
           valid: false,
-          message: "SoundCloud sets and playlists are not supported"
+          message: "SoundCloud sets and playlists are not supported",
         });
       }
       mediaInfo = await getSoundCloudInfo(url);
     } else if (url.includes("tiktok.com")) {
-      logData.mediaType = 'tiktok';
+      logData.mediaType = "tiktok";
       const tiktokData = await ttdl(url);
       const randomNumber = Math.floor(Math.random() * 6) + 5;
 
@@ -604,7 +758,7 @@ app.post("/fetch", async (req, res) => {
         title: tiktokData.title,
         duration: tiktokData.published,
         quality: "HD",
-        size: "~" + randomNumber + " MB", // after all tiktok doesnt allow me to see the size without downloading it first
+        size: "~" + randomNumber + " MB",
         url: tiktokData.video,
         isTikTok: true,
         likes: tiktokData.like,
@@ -614,20 +768,20 @@ app.post("/fetch", async (req, res) => {
         author: tiktokData.author,
         username: tiktokData.username,
         profilePicture: tiktokData.avatar,
-        thumbnail: tiktokData.cover
+        thumbnail: tiktokData.cover,
       };
     } else if (url.includes("instagram.com")) {
-      logData.mediaType = 'instagram';
+      logData.mediaType = "instagram";
       const instagramData = await igdl(url);
       let igdata = await instagramData.data;
 
       mediaInfo = {
         title: "Instagram Media",
         url: igdata[0].url,
-        isAnime: true // just for the sake of it
+        isAnime: true,
       };
     } else if (url.includes("twitter.com") || url.includes("x.com")) {
-      logData.mediaType = 'twitter';
+      logData.mediaType = "twitter";
       try {
         const result = await TwitterDL(url);
         console.log("Twitter result:", result);
@@ -637,29 +791,29 @@ app.post("/fetch", async (req, res) => {
           isTwitter: true,
           author: result.result.author.bio || "Twitter User",
           username: result.result.author.username || "user",
-          profilePicture: result.result.author.profileImageUrl || "https://abs.twimg.com/sticky/default_profile_images/default_profile.png",
+          profilePicture:
+            result.result.author.profileImageUrl ||
+            "https://abs.twimg.com/sticky/default_profile_images/default_profile.png",
           likes: result.result.statistics.favoriteCount || 0,
           retweets: result.result.statistics.retweetCount || 0,
           replies: result.result.statistics.replieCount || 0,
-          views: result.result.statistics.viewCount || 0
+          views: result.result.statistics.viewCount || 0,
         };
       } catch (error) {
         console.error("Twitter download error:", error);
         return res.status(400).json({
           valid: false,
-          message: "Downloading NSFW media is not allowed for free users."
+          message: "Downloading NSFW media is not allowed for free users.",
         });
       }
     }
     if (toggleAnime) {
-      logData.mediaType = 'anime';
+      logData.mediaType = "anime";
       mediaInfo = await getAnimeInfo(url);
     }
 
-    // Update success status
     logData.success = true;
 
-    // Log the request
     logToHistory(logData);
 
     return res.status(200).json({
@@ -667,61 +821,54 @@ app.post("/fetch", async (req, res) => {
       message: "Valid URL detected!",
       mediaInfo,
       isFromSpotify,
-      isFromSoundCloud
+      isFromSoundCloud,
     });
   } catch (error) {
-    // Log failed request
     logToHistory({
       url: req.body.url,
       userIP: req.ip,
       success: false,
-      mediaType: 'error',
-      error: error.message
+      mediaType: "error",
+      error: error.message,
     });
 
     console.error("Server error:", error);
     return res.status(500).json({
       valid: false,
-      message: error.message || "Error processing URL. Please try again."
+      message: error.message || "Error processing URL. Please try again.",
     });
   }
 });
 
-app.get('/stream', async (req, res) => {
+app.get("/stream", async (req, res) => {
   try {
     const { url, title } = req.query;
-    
-    // Generate a secure token for this stream
-    const streamId = crypto.randomBytes(16).toString('hex');
+
+    const streamId = crypto.randomBytes(16).toString("hex");
     const filePath = path.join(tempDir, `${streamId}.mp4`);
 
-    // Store stream info in cache
     streamCache.set(streamId, {
       url,
       title,
       filePath,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
 
-    // Start downloading the video in the background
     const videoStream = ytdl(url, {
-      quality: 'highest',
-      filter: 'videoandaudio'
+      quality: "highest",
+      filter: "videoandaudio",
     });
 
-    // Save the video to a temporary file
     videoStream.pipe(fs.createWriteStream(filePath));
 
-    // Return the secure stream URL
     res.json({
-      streamUrl: `video/${streamId}`
+      streamUrl: `video/${streamId}`,
     });
   } catch (error) {
-    console.error('Stream error:', error);
-    res.status(500).json({ error: 'Failed to process video' });
+    console.error("Stream error:", error);
+    res.status(500).json({ error: "Failed to process video" });
   }
 });
-
 
 async function getAlbumCoverFromSoundCloud(artist, track) {
   const searchUrl = `https://api.soundcloud.com/search/tracks?q=${encodeURIComponent(
@@ -740,14 +887,13 @@ async function getAlbumCoverFromSoundCloud(artist, track) {
           "-t500x500"
         );
         const imageResponse = await axios.get(highResArtwork, {
-          responseType: "arraybuffer"
+          responseType: "arraybuffer",
         });
         return imageResponse.data;
       }
     }
     return null;
   } catch (error) {
-   // console.error("Error getting SoundCloud artwork:", error);
     return null;
   }
 }
@@ -763,7 +909,6 @@ async function getAlbumCoverFromLastFM(artist, track, apiKey) {
 
     let genre = null;
     if (trackData && trackData.tags && trackData.tags.tag) {
-      // Get the first tag as genre
       genre = trackData.tags.tag[0].name;
     }
 
@@ -776,11 +921,11 @@ async function getAlbumCoverFromLastFM(artist, track, apiKey) {
           return parseInt(prev.size) > parseInt(current.size) ? prev : current;
         });
         const imageResponse = await axios.get(largestImage["#text"], {
-          responseType: "arraybuffer"
+          responseType: "arraybuffer",
         });
         return {
           imageBuffer: imageResponse.data,
-          genre: genre
+          genre: genre,
         };
       }
     }
@@ -799,7 +944,7 @@ app.get("/download", async (req, res) => {
   if (!url) {
     return res.status(400).json({
       valid: false,
-      message: "URL is required."
+      message: "URL is required.",
     });
   }
 
@@ -814,14 +959,19 @@ app.get("/download", async (req, res) => {
     res.redirect(url);
   }
 
-  if (url.includes("kayoanime") || url.includes("instagram.com") || url.includes("rapidcdn") || url.includes("cdn")) {
-    url = url + "#format=mp4" // just to make it easier for me
+  if (
+    url.includes("kayoanime") ||
+    url.includes("instagram.com") ||
+    url.includes("rapidcdn") ||
+    url.includes("cdn")
+  ) {
+    url = url + "#format=mp4";
   }
 
   if (!format || !["mp3", "mp4"].includes(format)) {
     return res.status(400).json({
       valid: false,
-      message: "Invalid format. Must be mp3 or mp4."
+      message: "Invalid format. Must be mp3 or mp4.",
     });
   }
 
@@ -835,7 +985,7 @@ app.get("/download", async (req, res) => {
     }
 
     if (isFromSoundCloud) {
-      format = "mp3"; // SoundCloud only supports MP3
+      format = "mp3";
       const info = await scdl.getInfo(url, SOUNDCLOUD_CLIENT_ID);
       res.header(
         "Content-Disposition",
@@ -862,29 +1012,35 @@ app.get("/download", async (req, res) => {
 
     if (url.includes("twitter.com") || url.includes("x.com")) {
       const result = await TwitterDL(url);
-      const highestQualityVideo = result.result.media[0].videos.reduce((prev, current) => {
-        return (prev.bitrate > current.bitrate) ? prev : current;
-      });
+      const highestQualityVideo = result.result.media[0].videos.reduce(
+        (prev, current) => {
+          return prev.bitrate > current.bitrate ? prev : current;
+        }
+      );
       console.log("Highest quality video URL:", highestQualityVideo.url);
-      res.setHeader('Content-Disposition', `attachment; filename="${result.result.description || "Twitter Media"}.mp4"`);
-      res.setHeader('Content-Type', 'video/mp4');
-      
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${
+          result.result.description || "Twitter Media"
+        }.mp4"`
+      );
+      res.setHeader("Content-Type", "video/mp4");
+
       try {
         const response = await axios({
-          method: 'get',
+          method: "get",
           url: highestQualityVideo.url,
-          responseType: 'stream'
+          responseType: "stream",
         });
-        
+
         response.data.pipe(res);
       } catch (error) {
         console.error("Error downloading video:", error);
         return res.status(500).json({
           valid: false,
-          message: "Failed to download video " + error
+          message: "Failed to download video " + error,
         });
       }
-      //return res.redirect(highestQualityVideo.url);
     }
 
     if (url.includes("spotify.com")) {
@@ -892,7 +1048,7 @@ app.get("/download", async (req, res) => {
       if (!trackIdMatch || !trackIdMatch[1]) {
         return res.status(400).json({
           valid: false,
-          message: "Invalid Spotify URL format"
+          message: "Invalid Spotify URL format",
         });
       }
       const trackId = trackIdMatch[1];
@@ -901,7 +1057,7 @@ app.get("/download", async (req, res) => {
       if (!spotifyInfo.url) {
         return res.status(404).json({
           valid: false,
-          message: "Could not find equivalent YouTube track"
+          message: "Could not find equivalent YouTube track",
         });
       }
       url = spotifyInfo.url.replace("#from_spotify", "");
@@ -913,40 +1069,43 @@ app.get("/download", async (req, res) => {
         const html = response.data;
         const $ = cheerio.load(html);
 
-        let downloadLink = $('.shortc-button.small.blue').attr('href');
+        let downloadLink = $(".shortc-button.small.blue").attr("href");
         if (!downloadLink)
-          downloadLink = $('.shortc-button.small.black').attr('href')
+          downloadLink = $(".shortc-button.small.black").attr("href");
         if (!downloadLink)
-          downloadLink = $('.shortc-button.small.green').attr('href')
-        if (!downloadLink)
-          downloadLink = $('.shortc-button').attr('href')
+          downloadLink = $(".shortc-button.small.green").attr("href");
+        if (!downloadLink) downloadLink = $(".shortc-button").attr("href");
 
         if (downloadLink) {
-          try{
+          try {
             const resolvedLink = await tinyurl.resolve(downloadLink);
-            return res.redirect(resolvedLink)
+            return res.redirect(resolvedLink);
           } catch {
-            try{
-              const resolvedLink = await tinyurl.resolve($('.shortc-button.small.black').attr('href'));
-              return res.redirect(resolvedLink)
+            try {
+              const resolvedLink = await tinyurl.resolve(
+                $(".shortc-button.small.black").attr("href")
+              );
+              return res.redirect(resolvedLink);
             } catch {
               try {
-                const resolvedLink = await tinyurl.resolve($('.shortc-button.small.green').first().attr('href'));
-                return res.redirect(resolvedLink)
+                const resolvedLink = await tinyurl.resolve(
+                  $(".shortc-button.small.green").first().attr("href")
+                );
+                return res.redirect(resolvedLink);
               } catch {
-                console.error('Invalid link');
+                console.error("Invalid link");
                 return res.redirect(url);
               }
             }
           }
         } else {
-          console.error('Invalid link');
+          console.error("Invalid link");
           return res.redirect(url);
         }
       } catch (error) {
-        console.error('Error getting download link:', error);
+        console.error("Error getting download link:", error);
         return res.send("The link is not valid");
-      }    
+      }
     }
 
     if (url.includes("youtube.com") || url.includes("youtu.be")) {
@@ -956,15 +1115,17 @@ app.get("/download", async (req, res) => {
         if (!mediaData || !mediaData.audio) {
           return res.status(404).json({
             valid: false,
-            message: "No suitable mp3 format found."
+            message: "No suitable mp3 format found.",
           });
         }
 
-        const audioStream = (await axios({
-          url: mediaData.audio,
-          method: "GET",
-          responseType: "stream"
-        })).data;
+        const audioStream = (
+          await axios({
+            url: mediaData.audio,
+            method: "GET",
+            responseType: "stream",
+          })
+        ).data;
 
         let artworkFailed = false;
         let imageBuffer = null;
@@ -984,7 +1145,9 @@ app.get("/download", async (req, res) => {
 
         if (!imageBuffer && !artworkFailed) {
           try {
-            console.warn("No album data found on Last.fm, trying SoundCloud...");
+            console.warn(
+              "No album data found on Last.fm, trying SoundCloud..."
+            );
             imageBuffer = await getAlbumCoverFromSoundCloud(
               mediaData.author,
               mediaData.title
@@ -1010,16 +1173,19 @@ app.get("/download", async (req, res) => {
             .audioCodec("libmp3lame")
             .audioBitrate("320k")
             .outputFormat("mp3")
-            .addOutputOption('-metadata', `title=${mediaData.title}`)
-            .addOutputOption('-metadata', `artist=${mediaData.author}`)
-            .addOutputOption('-metadata', `album=${mediaData.title} - ${mediaData.author}`)
-            .addOutputOption('-metadata', `genre=${genre || 'Unknown'}`)
-            .on("error", err => {
+            .addOutputOption("-metadata", `title=${mediaData.title}`)
+            .addOutputOption("-metadata", `artist=${mediaData.author}`)
+            .addOutputOption(
+              "-metadata",
+              `album=${mediaData.title} - ${mediaData.author}`
+            )
+            .addOutputOption("-metadata", `genre=${genre || "Unknown"}`)
+            .on("error", (err) => {
               console.error("FFmpeg error:", err);
               if (!res.headersSent) {
                 res.status(500).json({
                   valid: false,
-                  message: "FFmpeg error occurred."
+                  message: "FFmpeg error occurred.",
                 });
               }
             })
@@ -1039,10 +1205,10 @@ app.get("/download", async (req, res) => {
             __dirname,
             `temp_output_${randomFileName}.mp3`
           );
-          
+
           tempFiles.add({ path: tempImagePath, timestamp: Date.now() });
           tempFiles.add({ path: tempOutputPath, timestamp: Date.now() });
-          
+
           console.log(`Writing temp image to: ${tempImagePath}`);
           fs.writeFileSync(tempImagePath, pngBuffer);
           console.log("Temp image written.");
@@ -1050,51 +1216,56 @@ app.get("/download", async (req, res) => {
           ffmpeg()
             .input(audioStream)
             .input(tempImagePath)
-            .audioCodec('libmp3lame')
-            .audioBitrate('320k')
-            .addOutputOption('-id3v2_version', '3')
-            .addOutputOption('-map', '0:a')
-            .addOutputOption('-map', '1')
-            .addOutputOption('-metadata:s:v', 'title=Album cover')
-            .addOutputOption('-metadata:s:v', 'comment=Cover (front)')
-            .addOutputOption('-disposition:v', 'attached_pic')
-            .addOutputOption('-metadata', `title=${mediaData.title}`)
-            .addOutputOption('-metadata', `artist=${mediaData.author}`)
-            .addOutputOption('-metadata', `album=${mediaData.title} - ${mediaData.author}`)
-            .addOutputOption('-metadata', `genre=${genre || 'Unknown'}`)
-            .toFormat('mp3')
-            .on('start', () => {
-              console.log('FFmpeg processing started');
+            .audioCodec("libmp3lame")
+            .audioBitrate("320k")
+            .addOutputOption("-id3v2_version", "3")
+            .addOutputOption("-map", "0:a")
+            .addOutputOption("-map", "1")
+            .addOutputOption("-metadata:s:v", "title=Album cover")
+            .addOutputOption("-metadata:s:v", "comment=Cover (front)")
+            .addOutputOption("-disposition:v", "attached_pic")
+            .addOutputOption("-metadata", `title=${mediaData.title}`)
+            .addOutputOption("-metadata", `artist=${mediaData.author}`)
+            .addOutputOption(
+              "-metadata",
+              `album=${mediaData.title} - ${mediaData.author}`
+            )
+            .addOutputOption("-metadata", `genre=${genre || "Unknown"}`)
+            .toFormat("mp3")
+            .on("start", () => {
+              console.log("FFmpeg processing started");
             })
-            .on('end', () => {
-              console.log('FFmpeg processing finished');
+            .on("end", () => {
+              console.log("FFmpeg processing finished");
               const readStream = fs.createReadStream(tempOutputPath);
               readStream.pipe(res);
-              readStream.on('end', () => {
+              readStream.on("end", () => {
                 tempFiles.delete({ path: tempImagePath });
                 tempFiles.delete({ path: tempOutputPath });
-                fs.unlink(tempImagePath, err => {
-                  if (err) console.error('Error deleting temp image file:', err);
+                fs.unlink(tempImagePath, (err) => {
+                  if (err)
+                    console.error("Error deleting temp image file:", err);
                 });
-                fs.unlink(tempOutputPath, err => {
-                  if (err) console.error('Error deleting temp output file:', err);
+                fs.unlink(tempOutputPath, (err) => {
+                  if (err)
+                    console.error("Error deleting temp output file:", err);
                 });
               });
             })
-            .on('error', (err) => {
-              console.error('FFmpeg error during processing:', err);
+            .on("error", (err) => {
+              console.error("FFmpeg error during processing:", err);
               tempFiles.delete({ path: tempImagePath });
               tempFiles.delete({ path: tempOutputPath });
-              fs.unlink(tempImagePath, err => {
-                if (err) console.error('Error deleting temp image file:', err);
+              fs.unlink(tempImagePath, (err) => {
+                if (err) console.error("Error deleting temp image file:", err);
               });
-              fs.unlink(tempOutputPath, err => {
-                if (err) console.error('Error deleting temp output file:', err);
+              fs.unlink(tempOutputPath, (err) => {
+                if (err) console.error("Error deleting temp output file:", err);
               });
               if (!res.headersSent) {
                 res.status(500).json({
                   valid: false,
-                  message: "FFmpeg error occurred."
+                  message: "FFmpeg error occurred.",
                 });
               }
             })
@@ -1105,16 +1276,19 @@ app.get("/download", async (req, res) => {
             .audioCodec("libmp3lame")
             .audioBitrate("320k")
             .outputFormat("mp3")
-            .addOutputOption('-metadata', `title=${mediaData.title}`)
-            .addOutputOption('-metadata', `artist=${mediaData.author}`)
-            .addOutputOption('-metadata', `album=${mediaData.title} - ${mediaData.author}`)
-            .addOutputOption('-metadata', `genre=${genre || 'Unknown'}`)
-            .on("error", err => {
+            .addOutputOption("-metadata", `title=${mediaData.title}`)
+            .addOutputOption("-metadata", `artist=${mediaData.author}`)
+            .addOutputOption(
+              "-metadata",
+              `album=${mediaData.title} - ${mediaData.author}`
+            )
+            .addOutputOption("-metadata", `genre=${genre || "Unknown"}`)
+            .on("error", (err) => {
               console.error("FFmpeg error:", err);
               if (!res.headersSent) {
                 res.status(500).json({
                   valid: false,
-                  message: "FFmpeg error occurred."
+                  message: "FFmpeg error occurred.",
                 });
               }
             })
@@ -1125,7 +1299,7 @@ app.get("/download", async (req, res) => {
         if (!mediaData || !mediaData.video) {
           return res.status(404).json({
             valid: false,
-            message: "No suitable mp4 format found."
+            message: "No suitable mp4 format found.",
           });
         }
         res.header(
@@ -1133,14 +1307,15 @@ app.get("/download", async (req, res) => {
           `attachment; filename="${mediaData.title}.mp4"`
         );
         res.header("Content-Type", "video/mp4");
-        
-        // Download and pipe the video stream
-        const videoStream = (await axios({
-          url: mediaData.video,
-          method: 'GET',
-          responseType: 'stream'
-        })).data;
-        
+
+        const videoStream = (
+          await axios({
+            url: mediaData.video,
+            method: "GET",
+            responseType: "stream",
+          })
+        ).data;
+
         videoStream.pipe(res);
       }
     }
@@ -1148,41 +1323,45 @@ app.get("/download", async (req, res) => {
     console.error("Download error:", err);
     res.status(500).json({
       valid: false,
-      message: "Download failed."
+      message: "Download failed.",
     });
   }
 });
 
 async function getQQMusicLyrics(songMid) {
   try {
-    const response = await axios.get(`https://c.y.qq.com/lyric/fcgi-bin/fcg_query_lyric_new.fcg`, {
-      params: {
-        songmid: songMid,
-        pcachetime: new Date().getTime(),
-        platform: 'yqq',
-        hostUin: 0,
-        needNewCode: 0,
-        ct: 20,
-        cv: 1878,
-      },
-      headers: {
-        'Referer': 'https://y.qq.com/portal/player.html',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-      },
-    });
+    const response = await axios.get(
+      `https://c.y.qq.com/lyric/fcgi-bin/fcg_query_lyric_new.fcg`,
+      {
+        params: {
+          songmid: songMid,
+          pcachetime: new Date().getTime(),
+          platform: "yqq",
+          hostUin: 0,
+          needNewCode: 0,
+          ct: 20,
+          cv: 1878,
+        },
+        headers: {
+          Referer: "https://y.qq.com/portal/player.html",
+          "User-Agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+        },
+      }
+    );
 
     const lyricData = response.data;
     const lyricBase64 = lyricData.lyric;
     const tlyricBase64 = lyricData.trans;
 
     if (lyricBase64) {
-      const lyricBuffer = Buffer.from(lyricBase64, 'base64');
-      const lyric = lyricBuffer.toString('utf-8');
+      const lyricBuffer = Buffer.from(lyricBase64, "base64");
+      const lyric = lyricBuffer.toString("utf-8");
 
       let translatedLyric = null;
       if (tlyricBase64) {
-        const tlyricBuffer = Buffer.from(tlyricBase64, 'base64');
-        translatedLyric = tlyricBuffer.toString('utf-8');
+        const tlyricBuffer = Buffer.from(tlyricBase64, "base64");
+        translatedLyric = tlyricBuffer.toString("utf-8");
       }
 
       return {
@@ -1192,37 +1371,46 @@ async function getQQMusicLyrics(songMid) {
     }
     return null;
   } catch (error) {
-    console.error('Error fetching QQ Music lyrics:', error);
+    console.error("Error fetching QQ Music lyrics:", error);
     return null;
   }
 }
 
 async function searchQQMusic(query) {
   try {
-    const response = await axios.get(`https://c.y.qq.com/soso/fcgi-bin/client_search_cp`, {
-      params: {
-        w: query,
-        format: 'json',
-        p: 1,
-        n: 1,
-        aggr: 1,
-        lossless: 1,
-        cr: 1,
-        new_json: 1,
-      },
-      headers: {
-        'Referer': 'https://y.qq.com/portal/player.html',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-      },
-    });
+    const response = await axios.get(
+      `https://c.y.qq.com/soso/fcgi-bin/client_search_cp`,
+      {
+        params: {
+          w: query,
+          format: "json",
+          p: 1,
+          n: 1,
+          aggr: 1,
+          lossless: 1,
+          cr: 1,
+          new_json: 1,
+        },
+        headers: {
+          Referer: "https://y.qq.com/portal/player.html",
+          "User-Agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+        },
+      }
+    );
 
     const data = response.data;
-    if (data.data && data.data.song && data.data.song.list && data.data.song.list.length > 0) {
+    if (
+      data.data &&
+      data.data.song &&
+      data.data.song.list &&
+      data.data.song.list.length > 0
+    ) {
       return data.data.song.list[0].mid;
     }
     return null;
   } catch (error) {
-    console.error('Error searching QQ Music:', error);
+    console.error("Error searching QQ Music:", error);
     return null;
   }
 }
@@ -1236,14 +1424,19 @@ async function getNeteaseCloudMusicLyrics(songId) {
         tv: 1,
       },
       headers: {
-        'Referer': 'https://music.163.com/',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+        Referer: "https://music.163.com/",
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
       },
     });
 
     const lyricData = response.data;
-    const lyric = lyricData.lrc && lyricData.lrc.lyric ? lyricData.lrc.lyric : null;
-    const translatedLyric = lyricData.tlyric && lyricData.tlyric.lyric ? lyricData.tlyric.lyric : null;
+    const lyric =
+      lyricData.lrc && lyricData.lrc.lyric ? lyricData.lrc.lyric : null;
+    const translatedLyric =
+      lyricData.tlyric && lyricData.tlyric.lyric
+        ? lyricData.tlyric.lyric
+        : null;
 
     if (lyric || translatedLyric) {
       return {
@@ -1253,7 +1446,7 @@ async function getNeteaseCloudMusicLyrics(songId) {
     }
     return null;
   } catch (error) {
-    console.error('Error fetching NetEase lyrics:', error);
+    console.error("Error fetching NetEase lyrics:", error);
     return null;
   }
 }
@@ -1268,8 +1461,9 @@ async function searchNetease(query) {
         offset: 0,
       },
       headers: {
-        'Referer': 'https://music.163.com/',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+        Referer: "https://music.163.com/",
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
       },
     });
 
@@ -1279,36 +1473,37 @@ async function searchNetease(query) {
     }
     return null;
   } catch (error) {
-    console.error('Error searching NetEase:', error);
+    console.error("Error searching NetEase:", error);
     return null;
   }
 }
 
 function generateSearchVariations(title, artist) {
   const variations = [];
-  
+
   const cleanTitle = title
-    .replace(/['"!@#$%^&*()]/g, '')
-    .replace(/\s+/g, ' ')
+    .replace(/['"!@#$%^&*()]/g, "")
+    .replace(/\s+/g, " ")
     .trim();
-    
-  const cleanArtist = artist 
+
+  const cleanArtist = artist
     ? artist
-        .replace(/['"!@#$%^&*()]/g, '')
-        .replace(/\s+/g, ' ')
+        .replace(/['"!@#$%^&*()]/g, "")
+        .replace(/\s+/g, " ")
         .trim()
-    : '';
+    : "";
 
   if (cleanArtist) {
     variations.push(`${cleanTitle} ${cleanArtist}`);
   }
-  
+
   variations.push(cleanTitle);
 
-  const noParentheses = cleanTitle.replace(/\([^)\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff]*\)/g, '')
-    .replace(/\[[^\]\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff]*\]/g, '')
+  const noParentheses = cleanTitle
+    .replace(/\([^)\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff]*\)/g, "")
+    .replace(/\[[^\]\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff]*\]/g, "")
     .trim();
-    
+
   if (noParentheses !== cleanTitle) {
     if (cleanArtist) {
       variations.push(`${noParentheses} ${cleanArtist}`);
@@ -1319,13 +1514,13 @@ function generateSearchVariations(title, artist) {
   return [...new Set(variations)];
 }
 
-const wanakana = require('wanakana');
-const translate = require('@iamtraction/google-translate');
+const wanakana = require("wanakana");
+const translate = require("@iamtraction/google-translate");
 
 async function translateAndRomanize(lrcContent) {
-  const lines = lrcContent.split('\n');
+  const lines = lrcContent.split("\n");
   const processedLines = [];
-  
+
   for (const line of lines) {
     const match = line.match(/(\[\d{2}:\d{2}.\d{2}\])(.*)/);
     if (!match) {
@@ -1340,20 +1535,21 @@ async function translateAndRomanize(lrcContent) {
     }
 
     try {
-      const cleanedText = text.replace(/\([^)]*\)/g, '').trim();
-      
-      let processedText = cleanedText
-        .replace(/ no /g, ' の ')
-        .replace(/ ni /g, ' に ')
-        .replace(/ wo /g, ' を ')
-        .replace(/no(\S)/g, 'の$1')
-        .replace(/ni(\S)/g, 'に$1')
-        .replace(/wo(\S)/g, 'を$1');
+      const cleanedText = text.replace(/\([^)]*\)/g, "").trim();
 
-      const segments = processedText.split(/([a-zA-Z]+|[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff]+|\s+)/g)
-        .filter(segment => segment.length > 0);
-      
-      let romanizedText = '';
+      let processedText = cleanedText
+        .replace(/ no /g, " の ")
+        .replace(/ ni /g, " に ")
+        .replace(/ wo /g, " を ")
+        .replace(/no(\S)/g, "の$1")
+        .replace(/ni(\S)/g, "に$1")
+        .replace(/wo(\S)/g, "を$1");
+
+      const segments = processedText
+        .split(/([a-zA-Z]+|[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff]+|\s+)/g)
+        .filter((segment) => segment.length > 0);
+
+      let romanizedText = "";
       for (const segment of segments) {
         if (/[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff]/.test(segment)) {
           romanizedText += wanakana.toRomaji(segment);
@@ -1361,36 +1557,36 @@ async function translateAndRomanize(lrcContent) {
           romanizedText += segment;
         }
       }
-      
+
       romanizedText = romanizedText
-        .replace(/\s+/g, ' ')
-        .replace(/no\s+/g, ' no ')
-        .replace(/ni\s+/g, ' ni ')
-        .replace(/wo\s+/g, ' wo ')
-        .replace(/\s+/g, ' ')
+        .replace(/\s+/g, " ")
+        .replace(/no\s+/g, " no ")
+        .replace(/ni\s+/g, " ni ")
+        .replace(/wo\s+/g, " wo ")
+        .replace(/\s+/g, " ")
         .trim();
-      
+
       try {
-        const result = await translate(cleanedText, { from: 'ja', to: 'en' });
+        const result = await translate(cleanedText, { from: "ja", to: "en" });
         const translation = result.text;
-        
+
         processedLines.push(`${timestamp}${romanizedText} (${translation})`);
       } catch (err) {
-        console.warn('Translation failed:', err);
+        console.warn("Translation failed:", err);
         processedLines.push(`${timestamp}${romanizedText}`);
       }
     } catch (error) {
-      console.error('Processing error:', error);
+      console.error("Processing error:", error);
       processedLines.push(line);
     }
   }
 
-  return processedLines.join('\n');
+  return processedLines.join("\n");
 }
 
 function sanitizeFilename(filename) {
   const romaji = wanakana.toRomaji(filename);
-  return romaji.replace(/[^a-zA-Z0-9\s-]/g, '').trim();
+  return romaji.replace(/[^a-zA-Z0-9\s-]/g, "").trim();
 }
 
 app.get("/lyrics", async (req, res) => {
@@ -1399,7 +1595,7 @@ app.get("/lyrics", async (req, res) => {
     if (!url) {
       return res.status(400).json({
         success: false,
-        message: "Please provide a song title"
+        message: "Please provide a song title",
       });
     }
 
@@ -1415,106 +1611,146 @@ app.get("/lyrics", async (req, res) => {
       track_name = clean_url;
     }
 
-    const hasJapanese = /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff]/.test(track_name + artist_name);
-    
+    const hasJapanese = /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff]/.test(
+      track_name + artist_name
+    );
+
     if (hasJapanese) {
       try {
         const query = {
           track_name: track_name,
-          artist_name: artist_name
+          artist_name: artist_name,
         };
-        
-        console.log('Attempting exact match with:', query);
+
+        console.log("Attempting exact match with:", query);
         const syncedLyrics = await lrcClient.getSynced(query);
-        if (syncedLyrics && typeof syncedLyrics === 'string') {
-          if (romanized === 'true') {
-            console.log('Processing romanization and translation...');
+        if (syncedLyrics && typeof syncedLyrics === "string") {
+          if (romanized === "true") {
+            console.log("Processing romanization and translation...");
             const processedLyrics = await translateAndRomanize(syncedLyrics);
             const safeFilename = sanitizeFilename(track_name);
-            res.setHeader('Content-Type', 'text/plain');
-            res.setHeader('Content-Disposition', `attachment; filename="${safeFilename}.lrc"`);
+            res.setHeader("Content-Type", "text/plain");
+            res.setHeader(
+              "Content-Disposition",
+              `attachment; filename="${safeFilename}.lrc"`
+            );
             return res.send(processedLyrics);
           } else {
             const safeFilename = sanitizeFilename(track_name);
-            res.setHeader('Content-Type', 'text/plain');
-            res.setHeader('Content-Disposition', `attachment; filename="${safeFilename}.lrc"`);
+            res.setHeader("Content-Type", "text/plain");
+            res.setHeader(
+              "Content-Disposition",
+              `attachment; filename="${safeFilename}.lrc"`
+            );
             return res.send(syncedLyrics);
           }
         }
       } catch (error) {
-        console.log('Exact match failed:', error.message);
+        console.log("Exact match failed:", error.message);
       }
     }
 
     const searchVariations = generateSearchVariations(track_name, artist_name);
-    console.log('Generated search variations:', searchVariations);
+    console.log("Generated search variations:", searchVariations);
 
-    const limitedVariations = hasJapanese ? searchVariations.slice(0, 3) : searchVariations.slice(0, 5);
-    console.log('Using variations:', limitedVariations);
+    const limitedVariations = hasJapanese
+      ? searchVariations.slice(0, 3)
+      : searchVariations.slice(0, 5);
+    console.log("Using variations:", limitedVariations);
 
     for (const searchQuery of limitedVariations) {
       try {
         const query = {
           track_name: searchQuery,
-          artist_name: artist_name
+          artist_name: artist_name,
         };
-        
-        console.log('Attempting LrcLib with:', query);
+
+        console.log("Attempting LrcLib with:", query);
         const syncedLyrics = await lrcClient.getSynced(query);
-        if (syncedLyrics && typeof syncedLyrics === 'string') {
-          if (romanized === 'true') {
-            console.log('Processing romanization and translation...');
+        if (syncedLyrics && typeof syncedLyrics === "string") {
+          if (romanized === "true") {
+            console.log("Processing romanization and translation...");
             const processedLyrics = await translateAndRomanize(syncedLyrics);
             const safeFilename = sanitizeFilename(track_name);
-            res.setHeader('Content-Type', 'text/plain');
-            res.setHeader('Content-Disposition', `attachment; filename="${safeFilename}.lrc"`);
+            res.setHeader("Content-Type", "text/plain");
+            res.setHeader(
+              "Content-Disposition",
+              `attachment; filename="${safeFilename}.lrc"`
+            );
             return res.send(processedLyrics);
           } else {
             const safeFilename = sanitizeFilename(track_name);
-            res.setHeader('Content-Type', 'text/plain');
-            res.setHeader('Content-Disposition', `attachment; filename="${safeFilename}.lrc"`);
+            res.setHeader("Content-Type", "text/plain");
+            res.setHeader(
+              "Content-Disposition",
+              `attachment; filename="${safeFilename}.lrc"`
+            );
             return res.send(syncedLyrics);
           }
         }
 
         if (hasJapanese) {
-          console.log('Attempting QQ Music with exact match:', track_name);
+          console.log("Attempting QQ Music with exact match:", track_name);
           const songMid = await searchQQMusic(track_name);
           if (songMid) {
             const qqLyrics = await getQQMusicLyrics(songMid);
-            if (qqLyrics && qqLyrics.original && typeof qqLyrics.original === 'string') {
-              if (romanized === 'true') {
-                console.log('Processing romanization and translation...');
-                const processedLyrics = await translateAndRomanize(qqLyrics.original);
+            if (
+              qqLyrics &&
+              qqLyrics.original &&
+              typeof qqLyrics.original === "string"
+            ) {
+              if (romanized === "true") {
+                console.log("Processing romanization and translation...");
+                const processedLyrics = await translateAndRomanize(
+                  qqLyrics.original
+                );
                 const safeFilename = sanitizeFilename(track_name);
-                res.setHeader('Content-Type', 'text/plain');
-                res.setHeader('Content-Disposition', `attachment; filename="${safeFilename}.lrc"`);
+                res.setHeader("Content-Type", "text/plain");
+                res.setHeader(
+                  "Content-Disposition",
+                  `attachment; filename="${safeFilename}.lrc"`
+                );
                 return res.send(processedLyrics);
               } else {
                 const safeFilename = sanitizeFilename(track_name);
-                res.setHeader('Content-Type', 'text/plain');
-                res.setHeader('Content-Disposition', `attachment; filename="${safeFilename}.lrc"`);
+                res.setHeader("Content-Type", "text/plain");
+                res.setHeader(
+                  "Content-Disposition",
+                  `attachment; filename="${safeFilename}.lrc"`
+                );
                 return res.send(qqLyrics.original);
               }
             }
           }
         } else {
-          console.log('Attempting QQ Music with:', searchQuery);
+          console.log("Attempting QQ Music with:", searchQuery);
           const songMid = await searchQQMusic(searchQuery);
           if (songMid) {
             const qqLyrics = await getQQMusicLyrics(songMid);
-            if (qqLyrics && qqLyrics.original && typeof qqLyrics.original === 'string') {
-              if (romanized === 'true') {
-                console.log('Processing romanization and translation...');
-                const processedLyrics = await translateAndRomanize(qqLyrics.original);
+            if (
+              qqLyrics &&
+              qqLyrics.original &&
+              typeof qqLyrics.original === "string"
+            ) {
+              if (romanized === "true") {
+                console.log("Processing romanization and translation...");
+                const processedLyrics = await translateAndRomanize(
+                  qqLyrics.original
+                );
                 const safeFilename = sanitizeFilename(track_name);
-                res.setHeader('Content-Type', 'text/plain');
-                res.setHeader('Content-Disposition', `attachment; filename="${safeFilename}.lrc"`);
+                res.setHeader("Content-Type", "text/plain");
+                res.setHeader(
+                  "Content-Disposition",
+                  `attachment; filename="${safeFilename}.lrc"`
+                );
                 return res.send(processedLyrics);
               } else {
                 const safeFilename = sanitizeFilename(track_name);
-                res.setHeader('Content-Type', 'text/plain');
-                res.setHeader('Content-Disposition', `attachment; filename="${safeFilename}.lrc"`);
+                res.setHeader("Content-Type", "text/plain");
+                res.setHeader(
+                  "Content-Disposition",
+                  `attachment; filename="${safeFilename}.lrc"`
+                );
                 return res.send(qqLyrics.original);
               }
             }
@@ -1522,73 +1758,100 @@ app.get("/lyrics", async (req, res) => {
         }
 
         if (hasJapanese) {
-          console.log('Attempting NetEase with exact match:', track_name);
+          console.log("Attempting NetEase with exact match:", track_name);
           const songId = await searchNetease(track_name);
           if (songId) {
             const neteaseLyrics = await getNeteaseCloudMusicLyrics(songId);
-            if (neteaseLyrics && neteaseLyrics.original && typeof neteaseLyrics.original === 'string') {
-              if (romanized === 'true') {
-                console.log('Processing romanization and translation...');
-                const processedLyrics = await translateAndRomanize(neteaseLyrics.original);
+            if (
+              neteaseLyrics &&
+              neteaseLyrics.original &&
+              typeof neteaseLyrics.original === "string"
+            ) {
+              if (romanized === "true") {
+                console.log("Processing romanization and translation...");
+                const processedLyrics = await translateAndRomanize(
+                  neteaseLyrics.original
+                );
                 const safeFilename = sanitizeFilename(track_name);
-                res.setHeader('Content-Type', 'text/plain');
-                res.setHeader('Content-Disposition', `attachment; filename="${safeFilename}.lrc"`);
+                res.setHeader("Content-Type", "text/plain");
+                res.setHeader(
+                  "Content-Disposition",
+                  `attachment; filename="${safeFilename}.lrc"`
+                );
                 return res.send(processedLyrics);
               } else {
                 const safeFilename = sanitizeFilename(track_name);
-                res.setHeader('Content-Type', 'text/plain');
-                res.setHeader('Content-Disposition', `attachment; filename="${safeFilename}.lrc"`);
+                res.setHeader("Content-Type", "text/plain");
+                res.setHeader(
+                  "Content-Disposition",
+                  `attachment; filename="${safeFilename}.lrc"`
+                );
                 return res.send(neteaseLyrics.original);
               }
             }
           }
         } else {
-          console.log('Attempting NetEase with:', searchQuery);
+          console.log("Attempting NetEase with:", searchQuery);
           const songId = await searchNetease(searchQuery);
           if (songId) {
             const neteaseLyrics = await getNeteaseCloudMusicLyrics(songId);
-            if (neteaseLyrics && neteaseLyrics.original && typeof neteaseLyrics.original === 'string') {
-              if (romanized === 'true') {
-                console.log('Processing romanization and translation...');
-                const processedLyrics = await translateAndRomanize(neteaseLyrics.original);
+            if (
+              neteaseLyrics &&
+              neteaseLyrics.original &&
+              typeof neteaseLyrics.original === "string"
+            ) {
+              if (romanized === "true") {
+                console.log("Processing romanization and translation...");
+                const processedLyrics = await translateAndRomanize(
+                  neteaseLyrics.original
+                );
                 const safeFilename = sanitizeFilename(track_name);
-                res.setHeader('Content-Type', 'text/plain');
-                res.setHeader('Content-Disposition', `attachment; filename="${safeFilename}.lrc"`);
+                res.setHeader("Content-Type", "text/plain");
+                res.setHeader(
+                  "Content-Disposition",
+                  `attachment; filename="${safeFilename}.lrc"`
+                );
                 return res.send(processedLyrics);
               } else {
                 const safeFilename = sanitizeFilename(track_name);
-                res.setHeader('Content-Type', 'text/plain');
-                res.setHeader('Content-Disposition', `attachment; filename="${safeFilename}.lrc"`);
+                res.setHeader("Content-Type", "text/plain");
+                res.setHeader(
+                  "Content-Disposition",
+                  `attachment; filename="${safeFilename}.lrc"`
+                );
                 return res.send(neteaseLyrics.original);
               }
             }
           }
         }
       } catch (variationError) {
-        console.log('Error with variation:', searchQuery, variationError.message);
+        console.log(
+          "Error with variation:",
+          searchQuery,
+          variationError.message
+        );
         continue;
       }
     }
 
-    console.log('No lyrics found after trying variations');
+    console.log("No lyrics found after trying variations");
     return res.status(404).json({
       success: false,
-      message: "No lyrics found for this song"
+      message: "No lyrics found for this song",
     });
-
   } catch (error) {
     console.error("Lyrics error:", error);
     res.status(500).json({
       success: false,
-      message: "Unable to process lyrics request"
+      message: "Unable to process lyrics request",
     });
   }
 });
 
-app.use(express.static(path.join(__dirname, '../client/build')));
+app.use(express.static(path.join(__dirname, "../client/build")));
 
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "../client/build", "index.html"));
 });
 
 const PORT = 3001;

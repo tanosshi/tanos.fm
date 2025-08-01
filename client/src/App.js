@@ -221,16 +221,16 @@ function App() {
     style.textContent = `
       ${scrollbarStyles}
       ${getSelectionStyles(currentTheme)}
-      
+
       @import url('https://fonts.googleapis.com/css2?family=Inconsolata:wght@300;400;500;600&display=swap');
-      
+
       body {
         font-family: 'Consolas', 'Inconsolata', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
         font-feature-settings: 'ss01', 'ss02', 'cv01', 'cv02';
       }
-      
+
       @media (min-width: 640px) {
         body {
           font-family: 'Consolas', 'Inconsolata', 'Menlo', 'Monaco', monospace;
@@ -251,7 +251,6 @@ function App() {
     `;
     document.head.appendChild(style);
 
-    // Add Google Fonts
     const link = document.createElement("link");
     link.href =
       "https://fonts.googleapis.com/css2?family=Inconsolata:wght@300;400;500;600&display=swap";
@@ -383,10 +382,9 @@ function App() {
       return;
     }
 
-    // If panel is visible, animate it away first with longer duration
     if (mediaInfo) {
       setShowDownloadPanel(false);
-      await new Promise((resolve) => setTimeout(resolve, 1200)); // Wait for longer animation to complete
+      await new Promise((resolve) => setTimeout(resolve, 1200));
     }
 
     setIsLoading(true);
@@ -411,24 +409,9 @@ function App() {
       return;
     }
 
-    const responseText = await response.text();
-    let responseData;
-
-    try {
-      responseData = JSON.parse(responseText);
-    } catch (error) {
-      console.error("Server response:", responseText);
-      setNotification({
-        show: true,
-        message: "An unexpected error occurred. Check the console for details.",
-        isValid: false,
-      });
-      setIsLoading(false);
-      return;
-    }
+    const responseData = await response.json();
 
     if (!responseData.valid) {
-      // Check for duration error specifically
       if (responseData.message && responseData.message.includes("too long")) {
         setNotification({
           show: true,
@@ -506,7 +489,6 @@ function App() {
 
   useEffect(() => {
     if (mediaInfo) {
-      // Small delay to ensure the panel starts from opacity 0
       setTimeout(() => {
         setShowDownloadPanel(true);
       }, 50);
