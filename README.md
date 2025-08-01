@@ -1,5 +1,7 @@
 # tanos.fm 📦
-crazily broken atm, dont expect it to work
+
+UI and Downloads are broken at the moment, getting fixed as soon as possible.
+
 ### This project is still under construction, dont bother creating issues
 
 **tanos**'s **f**ree **m**edia is a quick yet ad-free media downloader, made for educational purposes only.
@@ -7,40 +9,44 @@ crazily broken atm, dont expect it to work
 ![tanos-frontend](thumbnail.png)
 
 Before working on the project install all deps by running
+
 ```bash
 $ npm run "install-deps"
 ```
 
-Build the project by running
-```bash
-$ npm run "build"
-```
+! Make sure to create an .env file in the server directory
 
-To run the server after building run, make sure the env in the server directory is filled in.
+Build and run the project by running
+
 ```bash
-$ cd server && npm start
-or
-$ npm run "server"
+$ npm run start
 ```
 
 ![tanos-frontend](front_end.png)
 
 Todo
 
-✔️ Success ❌ Not on priority ⏳ Working on it
-* Create a proper front-end ✔️
+✔️ Success ❌ Broken ⏳ Working on it
 
-* Optimize ffmpeg for the best performance ✔️
+- Create a proper front-end ❌
 
-* Find a way to make spotify work ✔️
+- Downloads ❌
 
-* Clean up code and fix UI on server ⏳
+- Optimize ffmpeg for the best performance ✔️
 
-* Add more sites ❌
+- Find a way to make Spotify work ✔️
 
-#### bugged static site (scaling is wrong) at [https://moonlit-malasada-a5e63c.netlify.app/](https://moonlit-malasada-a5e63c.netlify.app/)
+- Clean up code and fix UI on server ✔️
+
+- Add more sites ⏳
+
+#### oldest + buggiest **static** site (scaling is wrong) at [https://moonlit-malasada-a5e63c.netlify.app/](https://moonlit-malasada-a5e63c.netlify.app/)
 
 # Credits
-* [tanos](https://github.com/tanosshi) - Frontend and backend 🚧
 
-* [ytdl-core, ruhend-scraper, fluent-ffmpeg, youtube-sr, twitter-downloader, soundcloud-downloader](#) - For the APIs used 🧑‍🔬
+- [tanos](https://github.com/tanosshi) - Frontend and backend 🚧
+- [ruhend-scraper](#) - Scraping API 🕷️
+- [ytdl-core](#) - Scraping and Downloading API
+- [twitter-downloader](#) - Downloading API
+- [soundcloud-downloader](#) - Downloading API
+- [fluent-ffmpeg](#) - Converters
