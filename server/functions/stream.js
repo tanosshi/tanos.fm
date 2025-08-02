@@ -4,17 +4,11 @@ const ytdl = require("ytdl-core");
 const crypto = require("crypto");
 const fs = require("fs");
 const path = require("path");
-const axios = require("axios");
-const sharp = require("sharp");
 
 const ffmpeg = require("fluent-ffmpeg");
 const { Readable } = require("stream");
 
 const { TwitterDL } = require("twitter-downloader");
-
-const fetch = require("node-fetch");
-const cheerio = require("cheerio");
-const tinyurl = require("tinyurl");
 
 const tempDir = path.join(__dirname, "..", "temp");
 if (!fs.existsSync(tempDir)) {

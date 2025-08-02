@@ -3,6 +3,11 @@
   src: url(./fonts/consola.ttf);
 }
 
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(34, 34, 34, 0.7) rgba(10, 10, 10, 0.3);
+}
+
 body {
   margin: 0;
   font-family: ca;
@@ -31,7 +36,7 @@ html {
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(42, 42, 42, 0.8);
 }
-* {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(34, 34, 34, 0.7) rgba(10, 10, 10, 0.3);
+
+.bg-\[\#161616\]\/70 p:last-of-type {
+  font-size: 0.9rem;
 }

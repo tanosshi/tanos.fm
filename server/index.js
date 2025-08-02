@@ -1,25 +1,15 @@
+/** @file index.js
+ * @description The server file for tanos.fm, handles every request and functionality.
+ */
+
 "use strict";
-require("dotenv").config();
+require("dotenv").config({ path: __dirname + "/.env" });
 
 const express = require("express");
 const cors = require("cors");
 
 const fs = require("fs");
-const axios = require("axios");
 const path = require("path");
-const sharp = require("sharp");
-const crypto = require("crypto");
-
-const ffmpeg = require("fluent-ffmpeg");
-const { Readable } = require("stream");
-
-const { TwitterDL } = require("twitter-downloader");
-
-const fetch = require("node-fetch");
-const cheerio = require("cheerio");
-const tinyurl = require("tinyurl");
-
-const { Client } = require("lrclib-api");
 
 const rateLimitStore = new Map();
 
@@ -63,17 +53,18 @@ const rateLimiter = (req, res, next) => {
 };
 
 // -- Importing all the code, seperated them for better organization and maintainability
+const { Client } = require("lrclib-api");
+const lrcClient = new Client();
+
 const { ytmp3, ytmp4, ttdl, igdl } = require("ruhend-scraper");
 const getYoutubeInfo = require("./services/info/getYoutubeInfo.js");
 const getSpotifyInfo = require("./services/info/getSpotifyInfo.js");
 const getSpotifyAccessToken = require("./services/info/getSpotifyAccessToken.js");
 const getSoundCloudInfo = require("./services/info/getSoundCloudInfo.js");
-const getAnimeInfo = require("./services/info/getAnimeInfo.js");
 const getAlbumCoverFromSoundCloud = require("./services/albums/getAlbumCoverFromSoundCloud.js");
 const getAlbumCoverFromLastFM = require("./services/albums/getAlbumCoverFromLastFM.js");
 const { searchQQMusic, searchNetease } = require("./services/lyrics/search.js");
 const getNeteaseCloudMusicLyrics = require("./services/lyrics/getNeteaseCloudMusicLyrics.js");
-const lrcClient = new Client();
 
 // -- Unnecessary but might be fixing something
 const SOUNDCLOUD_CLIENT_ID = process.env.SOUNDCLOUD_CLIENT_ID;
@@ -117,6 +108,10 @@ const cleanupTempFiles = () => {
     "./client",
     "../server",
     "../client",
+    "../tmp",
+    "../temp",
+    "./temp",
+    "./tmp",
   ];
 
   dirsToCheck.forEach((dir) => {
@@ -153,11 +148,18 @@ function isValidUrl(url) {
       "music.youtube.com",
       "soundcloud.com",
       "spotify.com",
+      "spoti.fy",
       "music.apple.com",
       "tiktok.com",
+      "vm.tiktok.com",
+      "cn.tiktok.com",
+      "cn.tiktok.com",
       "instagram.com",
+      "instagr.am",
       "twitter.com",
       "x.com",
+      "twitterfx.com",
+      "fxtwitter.com",
     ];
     const hostname = new URL(url).hostname;
     return supportedDomains.some((domain) => hostname.includes(domain));
@@ -165,8 +167,6 @@ function isValidUrl(url) {
     return false;
   }
 }
-
-let toggleAnime = false; // Anime function is gone, but this is still used, will remove the leftovers soon
 
 // -- Create a log, it's stated in the ToS that it'll be logged anyway
 function logToHistory(requestData) {
@@ -316,6 +316,7 @@ function sanitizeFilename(filename) {
 // -- cba to explain this, it's a lyrics endpoint thats all
 app.get("/lyrics", async (req, res) => {
   try {
+    console.log("Lyrics request received:", req.query);
     const { url, romanized } = req.query;
     if (!url) {
       return res.status(400).json({
@@ -324,7 +325,7 @@ app.get("/lyrics", async (req, res) => {
       });
     }
 
-    let clean_url = url.replace(" - Topic", "").trim();
+    let clean_url = url.replace(" - Topic", "").trim().replace(" - Ep", "");
 
     let artist_name = "";
     let track_name = "";
@@ -341,6 +342,9 @@ app.get("/lyrics", async (req, res) => {
     );
 
     if (hasJapanese) {
+      console.log(
+        "Japanese characters detected, using specific search methods"
+      );
       try {
         const query = {
           track_name: track_name,

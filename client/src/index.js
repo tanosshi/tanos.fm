@@ -1,3 +1,8 @@
+/** @file index.js
+ * @description The main entry point
+ * TODO: Create an 404 page
+ */
+
 import React from "react";
 import ReactDOM from "react-dom/client";
 

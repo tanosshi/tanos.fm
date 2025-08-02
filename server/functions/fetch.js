@@ -5,22 +5,11 @@ const getYoutubeInfo = require("../services/info/getYoutubeInfo.js");
 const getSpotifyInfo = require("../services/info/getSpotifyInfo.js");
 const getSpotifyAccessToken = require("../services/info/getSpotifyAccessToken.js");
 const getSoundCloudInfo = require("../services/info/getSoundCloudInfo.js");
-const getAnimeInfo = require("../services/info/getAnimeInfo.js");
 
 const fs = require("fs");
-const axios = require("axios");
 const path = require("path");
-const sharp = require("sharp");
-const crypto = require("crypto");
-
-const ffmpeg = require("fluent-ffmpeg");
-const { Readable } = require("stream");
 
 const { TwitterDL } = require("twitter-downloader");
-
-const fetch = require("node-fetch");
-const cheerio = require("cheerio");
-const tinyurl = require("tinyurl");
 
 const rateLimitStore = new Map();
 
@@ -89,7 +78,6 @@ router.post("/", async (req, res) => {
       return res.status(400).json({ valid: false, message: "heelloooo" });
   }
 
-  let toggleAnime = false;
   try {
     const logData = {
       url: url,
@@ -99,12 +87,10 @@ router.post("/", async (req, res) => {
     };
 
     if (!url || typeof url !== "string") {
-      if (!toggleAnime) {
-        return res.status(400).json({
-          valid: false,
-          message: "Please enter a valid URL",
-        });
-      }
+      return res.status(400).json({
+        valid: false,
+        message: "Please enter a valid URL",
+      });
     }
 
     const isValid = isValidUrl(url.trim());
@@ -174,7 +160,7 @@ router.post("/", async (req, res) => {
       mediaInfo = {
         title: "Instagram Media",
         url: igdata[0].url,
-        isAnime: true,
+        isEMedia: true,
       };
     } else if (url.includes("twitter.com") || url.includes("x.com")) {
       logData.mediaType = "twitter";
@@ -202,10 +188,6 @@ router.post("/", async (req, res) => {
           message: "Downloading NSFW media is not allowed for free users.",
         });
       }
-    }
-    if (toggleAnime) {
-      logData.mediaType = "anime";
-      mediaInfo = await getAnimeInfo(url);
     }
 
     logData.success = true;

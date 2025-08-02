@@ -1,5 +1,12 @@
+/** @file App.js
+ * @description The front-end for tanos.fm, made to be eye pleasing.
+ * TODO: Minify the code, split the singular JavaScript file into multiple files.
+ * TODO: Upgrade the UI to be even more eye-pleasing.
+ * TODO: More animations
+ */
+
 import React, { useState, useEffect, useRef } from "react";
-// theres no way im documenting this
+
 console.log(
   `\x1b[94m%s\x1b[0m`,
   `⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠿⠿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
@@ -389,6 +396,29 @@ function App() {
     const cleanedValue = cleanUrl(inputValue);
     setResult(cleanedValue);
   };
+
+  const placeholders = [
+    "paste your link here :)",
+    "enter your link here !",
+    "enter any url here :3",
+    "place your url in here ;))",
+    "what would you want to download?",
+  ];
+  const [randomPlaceholderText] = React.useState(
+    () => placeholders[Math.floor(Math.random() * placeholders.length)]
+  );
+
+  const randomTexts = [
+    "is this what you were looking for?",
+    "here's your result!",
+    "does this look right?",
+    "is this the file you wanted?",
+    "your download is ready!",
+    "download your likings ;)",
+  ];
+  const [randomText] = React.useState(
+    () => randomTexts[Math.floor(Math.random() * randomTexts.length)]
+  );
 
   const dontspammyshit = useRef(0);
   const timer = useRef(null);
@@ -1202,11 +1232,18 @@ function App() {
                               setIsProcessing(true);
                               try {
                                 setIsLoadingLyrics(true);
-                                const response = await fetch(
-                                  `/lyrics?url=${encodeURIComponent(
-                                    mediaInfo.title
-                                  )}&romanized=true`
-                                );
+                                const lyricsUrl = `/lyrics?url=${encodeURIComponent(
+                                  mediaInfo.title
+                                )}&romanized=true`;
+                                console.log("Fetching lyrics from:", lyricsUrl);
+
+                                const response = await fetch(lyricsUrl, {
+                                  method: "GET",
+                                  headers: {
+                                    "Content-Type": "application/json",
+                                    Accept: "application/json",
+                                  },
+                                });
                                 if (!response.ok) {
                                   setNotification({
                                     show: true,
@@ -1282,10 +1319,22 @@ function App() {
                               setShowRomanizedPopup(false);
                               try {
                                 setIsLoadingLyrics(true);
-                                const response = await fetch(
-                                  `/lyrics?url=${encodeURIComponent(
-                                    mediaInfo.title
-                                  )}`
+                                const lyricsUrl = `/lyrics?url=${encodeURIComponent(
+                                  mediaInfo.title
+                                )}`;
+                                console.log("Fetching lyrics from:", lyricsUrl);
+
+                                const response = await fetch(lyricsUrl, {
+                                  method: "GET",
+                                  headers: {
+                                    "Content-Type": "application/json",
+                                    Accept: "application/json",
+                                  },
+                                });
+
+                                console.log(
+                                  "Lyrics response status:",
+                                  response.status
                                 );
                                 if (!response.ok) {
                                   setNotification({
@@ -1326,7 +1375,7 @@ function App() {
                         id="tracker-text"
                         className="w-full p-3 rounded-lg bg-[#0a0a0a]/60 backdrop-blur-lg border border-[#333333]/50 text-gray-200 resize-none focus:outline-none focus:border-[#444444]/70 transition-colors placeholder-gray-500 text-xs sm:text-base"
                         rows="1"
-                        placeholder="paste your link here :)"
+                        placeholder={randomPlaceholderText}
                         value={result}
                         onChange={handleInputChange}
                         onKeyDown={handleKeyDown}
@@ -1411,7 +1460,7 @@ function App() {
                   >
                     <div className="flex items-center justify-between mb-4">
                       <h3 className="text-lg font-semibold text-gray-200">
-                        ready to download ✅
+                        {randomText}
                       </h3>
                     </div>
                     <div className="space-y-4">
@@ -1668,16 +1717,16 @@ function App() {
                                     <span className="text-xl">
                                       {mediaInfo.durationError ? "❌" : "🎥"}
                                     </span>
-                                    {mediaInfo.isAnime ? "Download Media" : ""}{" "}
+                                    {mediaInfo.isEMedia ? "Download Media" : ""}{" "}
                                     <span className="text-xl">
-                                      {mediaInfo.isAnime ? "🍿" : ""}
+                                      {mediaInfo.isEMedia ? "🍿" : ""}
                                     </span>
                                   </>
                                 )}
                               </button>
                             )}
                           {!mediaInfo.isTikTok &&
-                            !mediaInfo.isAnime &&
+                            !mediaInfo.isEMedia &&
                             !mediaInfo.isTwitter && (
                               <button
                                 className={`flex-1 px-4 py-2 backdrop-blur-lg text-gray-200 rounded-lg border transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer ${
@@ -1738,7 +1787,7 @@ function App() {
                           mediaInfo.isFromSpotify ||
                           mediaInfo.isFromSoundCloud) &&
                           !mediaInfo.isTikTok &&
-                          !mediaInfo.isAnime &&
+                          !mediaInfo.isEMedia &&
                           !mediaInfo.isTwitter && (
                             <>
                               <button
@@ -1759,10 +1808,24 @@ function App() {
                                     (async () => {
                                       try {
                                         setIsLoadingLyrics(true);
+                                        const lyricsUrl = `/lyrics?url=${encodeURIComponent(
+                                          mediaInfo.title
+                                        )}`;
+                                        console.log(
+                                          "Fetching lyrics from:",
+                                          lyricsUrl
+                                        );
+
                                         const response = await fetch(
-                                          `/lyrics?url=${encodeURIComponent(
-                                            mediaInfo.title
-                                          )}`
+                                          lyricsUrl,
+                                          {
+                                            method: "GET",
+                                            headers: {
+                                              "Content-Type":
+                                                "application/json",
+                                              Accept: "application/json",
+                                            },
+                                          }
                                         );
                                         if (!response.ok) {
                                           setNotification({
@@ -1863,7 +1926,7 @@ function App() {
         </div>
       </div>
       <div className="absolute bottom-5 right-7 text-gray-200 text-sm z-11 opacity-7 hidden sm:block">
-        v0.9.stable_beta98
+        v1.0.a4
       </div>
     </div>
   );

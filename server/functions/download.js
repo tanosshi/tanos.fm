@@ -1,22 +1,25 @@
+/** @file download.js
+ * @description Handles downloading media files from various sources.
+ * TODO: [Line 111] Add as many metadata to the mp3 downloading as possible.
+ * TODO: Fix low quality YouTube downloads.
+ * TODO: Clean up the code, remove unused variables and imports.
+ * TODO: Add more error handling and logging.
+ */
+
 const express = require("express");
 const router = express.Router();
 const scdl = require("soundcloud-downloader").default;
 const ytdl = require("@distube/ytdl-core");
 const { TwitterDL } = require("twitter-downloader");
 const axios = require("axios");
-const cheerio = require("cheerio");
-const tinyurl = require("tinyurl");
 const getSpotifyAccessToken = require("../services/info/getSpotifyAccessToken.js");
 const getSpotifyInfo = require("../services/info/getSpotifyInfo.js");
+
 const getAlbumCoverFromLastFM = require("../services/albums/getAlbumCoverFromLastFM.js");
 const getAlbumCoverFromSoundCloud = require("../services/albums/getAlbumCoverFromSoundCloud.js");
+
 const ffmpeg = require("fluent-ffmpeg");
-const fs = require("fs");
-const path = require("path");
-const crypto = require("crypto");
-const sanitize = require("sanitize-filename");
 const SOUNDCLOUD_CLIENT_ID = process.env.SOUNDCLOUD_CLIENT_ID;
-const tempFiles = new Set();
 
 const sanitizeFilename = (filename) => {
   if (!filename) return "untitled";
@@ -76,7 +79,6 @@ router.get("/", async (req, res) => {
   }
 
   if (
-    url.includes("kayoanime") ||
     url.includes("instagram.com") ||
     url.includes("rapidcdn") ||
     url.includes("cdn")
@@ -244,13 +246,31 @@ router.get("/", async (req, res) => {
 
     if (
       url.includes("tiktok.com") ||
+      url.includes("tiktokcdn.com") ||
+      url.includes("tik") ||
       url.includes("tikwm.com") ||
       url.includes("akamaized.net") ||
+      url.includes("akamai") ||
       url.includes("cdn") ||
       url.includes("rapidcdn") ||
       url.includes("instagram.com")
     ) {
-      res.redirect(url);
+      res.setHeader("Content-Disposition", `attachment; filename="video.mp4"`);
+      res.setHeader("Content-Type", "video/mp4");
+      try {
+        const response = await axios({
+          method: "get",
+          url,
+          responseType: "stream",
+        });
+        response.data.pipe(res);
+      } catch (error) {
+        console.error("Error downloading video:", error);
+        return res.status(500).json({
+          valid: false,
+          message: "Failed to download video " + error,
+        });
+      }
       return;
     }
 
@@ -307,6 +327,11 @@ router.get("/", async (req, res) => {
       url = spotifyInfo.url.replace("#from_spotify", "");
     }
 
+    res.redirect(url);
+    res.status(404).json({
+      valid: false,
+      message: "Couldnt identify the URL, sending you to the URL.",
+    });
     return;
   } catch (error) {
     console.error("Download error:", error);

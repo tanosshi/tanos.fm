@@ -1,9 +1,5 @@
 # tanos.fm 📦
 
-Somewhat broken, most functions work again though.
-
-### This project is still under construction, dont bother creating issues
-
 **tanos**'s **f**ree **m**edia is a quick yet ad-free media downloader, made for educational purposes only.
 
 ![tanos-frontend](thumbnail.png)
@@ -26,7 +22,7 @@ $ npm start
 
 Todo
 
-✔️ Success ⏳ Mostly working ❌ Lowest priority
+✔️ Success ⏳ Working on it ❌ Lowest priority
 
 - Optimize ffmpeg for the best performance ✔️
 
@@ -36,7 +32,9 @@ Todo
 
 - Create a proper front-end ✔️
 
-- Downloads ⏳
+- Downloads ✔️
+
+- Higher quality downloads ⏳
 
 - Add more sites ❌
 

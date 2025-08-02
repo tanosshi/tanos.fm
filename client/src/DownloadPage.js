@@ -1,35 +1,36 @@
-import React, { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+/** @file DownloadPage.js
+ * @description Used to be the download page, but downloads are way too quick now to be necessary.
+ * TODO: Remove this page completely.
+ */
+
+import React, { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 
 const DownloadPage = () => {
   const [searchParams] = useSearchParams();
-  const [status, setStatus] = useState('Preparing download...');
+  const [status, setStatus] = useState("One second..");
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const url = searchParams.get('url');
-    const format = searchParams.get('format');
+    const url = searchParams.get("url");
+    const format = searchParams.get("format");
 
     if (!url || !format) {
-      setError('Invalid download parameters');
+      setError("Invalid download parameters");
       return;
     }
 
     const progressInterval = setInterval(() => {
-      setProgress(prev => {
+      setProgress((prev) => {
         if (prev >= 90) return prev;
         return prev + Math.random() * 10;
       });
     }, 1000);
 
     const statusMessages = [
-      'Preparing download...',
-      'Fetching media information...',
-      'Processing media...',
-      'Converting format...',
-      'Almost ready...',
-      'Starting download...'
+      "If you're seeing this, the back-end probably failed to serve you the requested file.",
+      "If you're seeing this, the back-end probably failed to serve you the requested file.",
     ];
 
     let messageIndex = 0;
@@ -40,7 +41,6 @@ const DownloadPage = () => {
       }
     }, 2000);
 
-    // Cleanup intervals
     return () => {
       clearInterval(progressInterval);
       clearInterval(statusInterval);
@@ -51,7 +51,9 @@ const DownloadPage = () => {
     <div className="min-h-screen flex items-center justify-center bg-[#0a0a0a] text-white font-['Consolas']">
       <div className="w-full max-w-md p-8 space-y-6">
         <div className="text-center space-y-4">
-          <h1 className="text-2xl font-semibold text-gray-200">Downloading Media</h1>
+          <h1 className="text-2xl font-semibold text-gray-200">
+            Invalid parameters
+          </h1>
           <p className="text-gray-400">{status}</p>
         </div>
 
@@ -62,7 +64,7 @@ const DownloadPage = () => {
         ) : (
           <>
             <div className="w-full bg-[#161616]/50 rounded-full h-2 overflow-hidden">
-              <div 
+              <div
                 className="h-full bg-[#ff80bf] transition-all duration-300 ease-out"
                 style={{ width: `${progress}%` }}
               />
@@ -74,11 +76,11 @@ const DownloadPage = () => {
         )}
 
         <div className="text-center text-sm text-gray-500">
-          Please wait while we process your download...
+          Processing data..
         </div>
       </div>
     </div>
   );
 };
 
-export default DownloadPage; 
+export default DownloadPage;
