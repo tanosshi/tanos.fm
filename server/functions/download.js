@@ -1,7 +1,7 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const { ytmp3, ytmp4 } = require("ruhend-scraper");
 const scdl = require("soundcloud-downloader").default;
+const ytdl = require("@distube/ytdl-core");
 const { TwitterDL } = require("twitter-downloader");
 const axios = require("axios");
 const cheerio = require("cheerio");
@@ -14,12 +14,39 @@ const ffmpeg = require("fluent-ffmpeg");
 const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
-
+const sanitize = require("sanitize-filename");
 const SOUNDCLOUD_CLIENT_ID = process.env.SOUNDCLOUD_CLIENT_ID;
 const tempFiles = new Set();
 
+const sanitizeFilename = (filename) => {
+  if (!filename) return "untitled";
+  // might aswell make chatgpt do this
+  return (
+    filename
+      .replace(/[<>:"/\\|?*\x00-\x1F]/g, "_") // Remove invalid Windows filename characters
+      .replace(/\s+/g, "_") // Replace spaces with underscores
+      .replace(/[\u{0080}-\u{FFFF}]/gu, "") // Remove non-ASCII characters
+      .replace(/_+/g, "_") // Replace multiple underscores with a single one
+      .replace(/^[_.]|[_.]$/g, "") // Remove leading/trailing dots and underscores
+      .substring(0, 100) // Limit length to 100 characters
+      .trim() || "untitled"
+  ); // Fallback to 'untitled' if empty after sanitization
+};
+
+const ytdlOptions = {
+  quality: "highestaudio",
+  filter: "audioonly",
+  highWaterMark: 1 << 25,
+  requestOptions: {
+    headers: {
+      "User-Agent":
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+    },
+  },
+};
+
 router.get("/", async (req, res) => {
-  console.log("Starting download for ", req.query);
+  console.log("Starting download for", req.query);
   let { url, format } = req.query;
 
   if (!url) {
@@ -29,15 +56,23 @@ router.get("/", async (req, res) => {
     });
   }
 
-  if (
-    url.includes("mega") ||
-    url.includes("mediafire") ||
-    url.includes("zippyshare") ||
-    url.includes("4shared") ||
-    url.includes("drive") ||
-    url.includes("dropbox")
-  ) {
-    res.redirect(url);
+  if (!format || !["mp3", "mp4"].includes(format)) {
+    return res.status(400).json({
+      valid: false,
+      message: "Invalid format. Must be 'mp3' or 'mp4'.",
+    });
+  }
+
+  const fileHostingServices = [
+    "mega",
+    "mediafire",
+    "zippyshare",
+    "4shared",
+    "drive",
+    "dropbox",
+  ];
+  if (fileHostingServices.some((service) => url.includes(service))) {
+    return res.redirect(url);
   }
 
   if (
@@ -57,6 +92,134 @@ router.get("/", async (req, res) => {
   }
 
   try {
+    if (url.includes("youtube.com") || url.includes("youtu.be")) {
+      try {
+        if (!ytdl.validateURL(url)) {
+          return res.status(400).json({
+            valid: false,
+            message: "Invalid YouTube URL",
+          });
+        }
+
+        let artworkFailed = false;
+        let imageBuffer = null;
+        let genre = null;
+
+        const info = await ytdl.getInfo(ytdl.getURLVideoID(url));
+        const videoTitle = sanitizeFilename(info.videoDetails.title);
+
+        if (format === "mp3") {
+          const info = await ytdl.getInfo(ytdl.getVideoID(url));
+          const videoTitle = sanitizeFilename(info.videoDetails.title);
+          const author = sanitizeFilename(
+            info.videoDetails.author?.name || "Unknown_Artist"
+          );
+
+          console.log(`Downloading MP3: ${videoTitle} by ${author}`);
+
+          const safeFilename = `${videoTitle}.mp3`;
+          res.setHeader(
+            "Content-Disposition",
+            `attachment; filename="${safeFilename}"`
+          );
+          res.setHeader("Content-Type", "audio/mpeg");
+
+          const audioStream = ytdl(url, ytdlOptions);
+
+          audioStream.on("error", (error) => {
+            console.error("YouTube stream error:", error);
+            if (!res.headersSent) {
+              res.status(500).json({
+                valid: false,
+                message: "Error streaming YouTube audio",
+                error: error.message,
+              });
+            }
+          });
+
+          const ffmpegCommand = ffmpeg(audioStream)
+            .audioCodec("libmp3lame")
+            .audioBitrate(320)
+            .format("mp3")
+            .on("start", () => console.log("Starting MP3 conversion..."))
+            .on("error", (err) => {
+              console.error("FFmpeg error:", err);
+              if (!res.headersSent) {
+                res.status(500).json({
+                  valid: false,
+                  message: "Error converting audio",
+                  error: err.message,
+                });
+              }
+            });
+
+          // go go go
+          const escapeMetadata = (str) => {
+            return String(str)
+              .replace(/=/g, "\\=") // Escape equals signs
+              .replace(/:/g, "\\:") // Escape colons
+              .replace(/#/g, "\\#") // Escape hashes
+              .replace(/\n/g, " ") // Remove newlines
+              .trim();
+          };
+
+          ffmpegCommand.outputOptions([
+            "-metadata",
+            `title=${escapeMetadata(videoTitle)}`,
+            "-metadata",
+            `artist=${escapeMetadata(author)}`,
+            "-metadata",
+            `album=${escapeMetadata(videoTitle)}`,
+            "-metadata",
+            "comment=Downloaded via tanos.fm",
+          ]);
+
+          ffmpegCommand.pipe(res, { end: true });
+        } else if (format === "mp4") {
+          console.log("Downloading MP4 from YouTube");
+
+          res.setHeader(
+            "Content-Disposition",
+            `attachment; filename="${videoTitle}.mp4"`
+          );
+          res.setHeader("Content-Type", "video/mp4");
+
+          const videoStream = ytdl(url, {
+            ...ytdlOptions,
+            quality: "highest",
+            filter: "audioandvideo",
+          });
+
+          videoStream.on("error", (error) => {
+            console.error("YouTube stream error:", error);
+            if (!res.headersSent) {
+              res.status(500).json({
+                valid: false,
+                message: "Error streaming YouTube video",
+                error: error.message,
+              });
+            }
+          });
+
+          videoStream.pipe(res);
+
+          videoStream.on("end", () => {
+            console.log("YouTube download completed successfully");
+          });
+        }
+      } catch (error) {
+        console.error("Error in YouTube download:", error);
+        if (!res.headersSent) {
+          res.status(500).json({
+            valid: false,
+            message: "Error processing YouTube download",
+            error: error.message,
+          });
+        }
+      }
+      return;
+    }
+
     const isFromSpotify = url.includes("#from_spotify");
     const isFromSoundCloud = url.includes("soundcloud.com");
 
@@ -101,7 +264,9 @@ router.get("/", async (req, res) => {
       console.log("Highest quality video URL:", highestQualityVideo.url);
       res.setHeader(
         "Content-Disposition",
-        `attachment; filename="${result.result.description || "Twitter Media"}.mp4"`
+        `attachment; filename="${
+          result.result.description || "Twitter Media"
+        }.mp4"`
       );
       res.setHeader("Content-Type", "video/mp4");
 
@@ -142,268 +307,16 @@ router.get("/", async (req, res) => {
       url = spotifyInfo.url.replace("#from_spotify", "");
     }
 
-    if (url.includes("kayoanime")) {
-      try {
-        const response = await axios.get(url);
-        const html = response.data;
-        const $ = cheerio.load(html);
-
-        let downloadLink = $(".shortc-button.small.blue").attr("href");
-        if (!downloadLink)
-          downloadLink = $(".shortc-button.small.black").attr("href");
-        if (!downloadLink)
-          downloadLink = $(".shortc-button.small.green").attr("href");
-        if (!downloadLink) downloadLink = $(".shortc-button").attr("href");
-
-        if (downloadLink) {
-          try {
-            const resolvedLink = await tinyurl.resolve(downloadLink);
-            return res.redirect(resolvedLink);
-          } catch {
-            try {
-              const resolvedLink = await tinyurl.resolve(
-                $(".shortc-button.small.black").attr("href")
-              );
-              return res.redirect(resolvedLink);
-            } catch {
-              try {
-                const resolvedLink = await tinyurl.resolve(
-                  $(".shortc-button.small.green").first().attr("href")
-                );
-                return res.redirect(resolvedLink);
-              } catch {
-                console.error("Invalid link");
-                return res.redirect(url);
-              }
-            }
-          }
-        } else {
-          console.error("Invalid link");
-          return res.redirect(url);
-        }
-      } catch (error) {
-        console.error("Error getting download link:", error);
-        return res.send("The link is not valid");
-      }
+    return;
+  } catch (error) {
+    console.error("Download error:", error);
+    if (!res.headersSent) {
+      res.status(500).json({
+        valid: false,
+        message: "Download failed",
+        error: error.message,
+      });
     }
-
-    if (url.includes("youtube.com") || url.includes("youtu.be")) {
-      if (format === "mp3") {
-        console.log("Downloading mp3");
-        const mediaData = await ytmp3(url);
-        if (!mediaData || !mediaData.audio) {
-          return res.status(404).json({
-            valid: false,
-            message: "No suitable mp3 format found.",
-          });
-        }
-
-        const audioStream = (
-          await axios({
-            url: mediaData.audio,
-            method: "GET",
-            responseType: "stream",
-          })
-        ).data;
-
-        let artworkFailed = false;
-        let imageBuffer = null;
-        let genre = null;
-        try {
-          const lastFMData = await getAlbumCoverFromLastFM(
-            mediaData.author,
-            mediaData.title,
-            process.env.LASTFM_API_KEY
-          );
-          imageBuffer = lastFMData.imageBuffer;
-          genre = lastFMData.genre;
-        } catch (error) {
-          console.warn("Failed to get LastFM artwork:", error);
-          artworkFailed = true;
-        }
-
-        if (!imageBuffer && !artworkFailed) {
-          try {
-            console.warn(
-              "No album data found on Last.fm, trying SoundCloud..."
-            );
-            imageBuffer = await getAlbumCoverFromSoundCloud(
-              mediaData.author,
-              mediaData.title
-            );
-            if (!imageBuffer) {
-              console.warn("No artwork found on SoundCloud either.");
-              artworkFailed = true;
-            }
-          } catch (error) {
-            console.warn("Failed to get SoundCloud artwork:", error);
-            artworkFailed = true;
-          }
-        }
-
-        res.header(
-          "Content-Disposition",
-          `attachment; filename="${mediaData.title} - ${mediaData.author}.mp3"`
-        );
-        res.header("Content-Type", "audio/mpeg");
-
-        if (artworkFailed || !imageBuffer) {
-          ffmpeg(audioStream)
-            .audioCodec("libmp3lame")
-            .audioBitrate("320k")
-            .outputFormat("mp3")
-            .addOutputOption("-metadata", `title=${mediaData.title}`)
-            .addOutputOption("-metadata", `artist=${mediaData.author}`)
-            .addOutputOption(
-              "-metadata",
-              `album=${mediaData.title} - ${mediaData.author}`
-            )
-            .addOutputOption("-metadata", `genre=${genre || "Unknown"}`)
-            .on("error", (err) => {
-              console.error("FFmpeg error:", err);
-              if (!res.headersSent) {
-                res.status(500).json({
-                  valid: false,
-                  message: "FFmpeg error occurred.",
-                });
-              }
-            })
-            .pipe(res, { end: true });
-          return;
-        }
-
-        try {
-          const pngBuffer = await sharp(imageBuffer).png().toBuffer();
-          console.log("Sharp processing complete.");
-          const randomFileName = crypto.randomBytes(16).toString("hex");
-          const tempImagePath = path.join(
-            __dirname,
-            `temp_cover_${randomFileName}.png`
-          );
-          const tempOutputPath = path.join(
-            __dirname,
-            `temp_output_${randomFileName}.mp3`
-          );
-
-          tempFiles.add({ path: tempImagePath, timestamp: Date.now() });
-          tempFiles.add({ path: tempOutputPath, timestamp: Date.now() });
-
-          console.log(`Writing temp image to: ${tempImagePath}`);
-          fs.writeFileSync(tempImagePath, pngBuffer);
-          console.log("Temp image written.");
-
-          ffmpeg()
-            .input(audioStream)
-            .input(tempImagePath)
-            .audioCodec("libmp3lame")
-            .audioBitrate("320k")
-            .addOutputOption("-id3v2_version", "3")
-            .addOutputOption("-map", "0:a")
-            .addOutputOption("-map", "1")
-            .addOutputOption("-metadata:s:v", "title=Album cover")
-            .addOutputOption("-metadata:s:v", "comment=Cover (front)")
-            .addOutputOption("-disposition:v", "attached_pic")
-            .addOutputOption("-metadata", `title=${mediaData.title}`)
-            .addOutputOption("-metadata", `artist=${mediaData.author}`)
-            .addOutputOption(
-              "-metadata",
-              `album=${mediaData.title} - ${mediaData.author}`
-            )
-            .addOutputOption("-metadata", `genre=${genre || "Unknown"}`)
-            .toFormat("mp3")
-            .on("start", () => {
-              console.log("FFmpeg processing started");
-            })
-            .on("end", () => {
-              console.log("FFmpeg processing finished");
-              const readStream = fs.createReadStream(tempOutputPath);
-              readStream.pipe(res);
-              readStream.on("end", () => {
-                tempFiles.delete({ path: tempImagePath });
-                tempFiles.delete({ path: tempOutputPath });
-                fs.unlink(tempImagePath, (err) => {
-                  if (err)
-                    console.error("Error deleting temp image file:", err);
-                });
-                fs.unlink(tempOutputPath, (err) => {
-                  if (err)
-                    console.error("Error deleting temp output file:", err);
-                });
-              });
-            })
-            .on("error", (err) => {
-              console.error("FFmpeg error during processing:", err);
-              tempFiles.delete({ path: tempImagePath });
-              tempFiles.delete({ path: tempOutputPath });
-              fs.unlink(tempImagePath, (err) => {
-                if (err) console.error("Error deleting temp image file:", err);
-              });
-              fs.unlink(tempOutputPath, (err) => {
-                if (err) console.error("Error deleting temp output file:", err);
-              });
-              if (!res.headersSent) {
-                res.status(500).json({
-                  valid: false,
-                  message: "FFmpeg error occurred.",
-                });
-              }
-            })
-            .saveToFile(tempOutputPath);
-        } catch (error) {
-          console.error("Error processing artwork:", error);
-          ffmpeg(audioStream)
-            .audioCodec("libmp3lame")
-            .audioBitrate("320k")
-            .outputFormat("mp3")
-            .addOutputOption("-metadata", `title=${mediaData.title}`)
-            .addOutputOption("-metadata", `artist=${mediaData.author}`)
-            .addOutputOption(
-              "-metadata",
-              `album=${mediaData.title} - ${mediaData.author}`
-            )
-            .addOutputOption("-metadata", `genre=${genre || "Unknown"}`)
-            .on("error", (err) => {
-              console.error("FFmpeg error:", err);
-              if (!res.headersSent) {
-                res.status(500).json({
-                  valid: false,
-                  message: "FFmpeg error occurred.",
-                });
-              }
-            })
-            .pipe(res, { end: true });
-        }
-      } else if (format === "mp4") {
-        const mediaData = await ytmp4(url);
-        if (!mediaData || !mediaData.video) {
-          return res.status(404).json({
-            valid: false,
-            message: "No suitable mp4 format found.",
-          });
-        }
-        res.header(
-          "Content-Disposition",
-          `attachment; filename="${mediaData.title}.mp4"`
-        );
-        res.header("Content-Type", "video/mp4");
-
-        const videoStream = (
-          await axios({
-            url: mediaData.video,
-            method: "GET",
-            responseType: "stream",
-          })
-        ).data;
-
-        videoStream.pipe(res);
-      }
-    }
-  } catch (err) {
-    console.error("Download error:", err);
-    res.status(500).json({
-      valid: false,
-      message: "Download failed.",
-    });
   }
 });
 

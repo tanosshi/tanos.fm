@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 // theres no way im documenting this
 console.log(
   `\x1b[94m%s\x1b[0m`,
@@ -135,6 +135,7 @@ function App() {
   const [showDownloadPanel, setShowDownloadPanel] = useState(false);
 
   const [buttonScale, setButtonScale] = useState(1);
+  const [isButtonPressed, setIsButtonPressed] = useState(false);
 
   const glintAnimation = `
     @keyframes glint {
@@ -151,11 +152,38 @@ function App() {
   `;
 
   const handleButtonMouseDown = () => {
-    setButtonScale(0.97);
+    setIsButtonPressed(true);
+    setButtonScale(0.92);
+    setTimeout(() => {
+      setButtonScale(1.01);
+      setTimeout(() => {
+        setButtonScale(1);
+        setIsButtonPressed(false);
+      }, 120);
+    }, 90);
   };
 
   const handleButtonMouseUp = () => {
-    setButtonScale(1);
+    setButtonScale(1.01);
+    setTimeout(() => {
+      setButtonScale(1);
+      setIsButtonPressed(false);
+    }, 100);
+  };
+
+  const handlePaste = (e) => {
+    setTimeout(() => {
+      fetchData();
+      setButtonScale(0.94);
+      setTimeout(() => {
+        setButtonScale(1);
+      }, 100);
+
+      e.target.style.animation = "glint 1s forwards";
+      setTimeout(() => {
+        e.target.style.animation = "";
+      }, 1000);
+    }, 250);
   };
 
   const handleKeyDown = (e) => {
@@ -176,10 +204,24 @@ function App() {
 
   useEffect(() => {
     const style = document.createElement("style");
-    style.textContent = glintAnimation;
+    style.textContent = `
+      ${glintAnimation}
+      .bouncy-btn {
+        transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+        will-change: transform, box-shadow;
+      }
+      .bouncy-btn:active, .bouncy-btn.pressed {
+        box-shadow: 0 2px 16px 0 rgba(201,84,195,0.25), 0 1.5px 4px 0 rgba(0,0,0,0.12);
+      }
+    `;
     document.head.appendChild(style);
     return () => document.head.removeChild(style);
   }, [glintAnimation]);
+
+  const getDynamicFontSize = (t) => {
+    const s = Math.max(0, t.length - 50 + t.split("\n").length * 10);
+    return `${Math.max(0.3, 1 - s * 0.007)}rem`;
+  };
 
   const cycleTheme = () => {
     const newIndex = (currentThemeIndex + 1) % themes.length;
@@ -348,6 +390,9 @@ function App() {
     setResult(cleanedValue);
   };
 
+  const dontspammyshit = useRef(0);
+  const timer = useRef(null);
+
   const fetchData = async () => {
     let lowerResults = result.toLowerCase();
     if (
@@ -358,6 +403,17 @@ function App() {
     ) {
       return setShowSupported(true);
     }
+
+    dontspammyshit.current += 1;
+
+    if (!timer.current) {
+      timer.current = setTimeout(() => {
+        dontspammyshit.current = 0;
+        timer.current = null;
+      }, 3000);
+    }
+
+    if (dontspammyshit.current >= 3) return;
 
     if (!result.trim()) {
       setNotification({
@@ -488,7 +544,7 @@ function App() {
 
   return (
     <div
-      className="flex items-center justify-center min-h-screen w-full relative overflow-x-hidden scale-[0.6] sm:scale-60"
+      className="flex items-center justify-center min-h-screen w-full relative overflow-x-hidden scale-[0.5] sm:scale-50"
       style={{
         backgroundColor: currentTheme.bg,
         backgroundImage: currentTheme.backgroundImage
@@ -747,7 +803,7 @@ function App() {
                   tanos's free media
                 </h1>
                 <p className="text-sm sm:text-base text-gray-400 text-center">
-                  A quick yet ad-free media downloader
+                  a quick yet ad-free media downloader
                 </p>
                 <button
                   className="text-sm sm:text-base text-gray-400 hover:text-gray-200 transition-colors flex items-center gap-2 cursor-pointer"
@@ -755,7 +811,7 @@ function App() {
                     setShowSupported(!showSupported) & setSelectedPlatform(null)
                   }
                 >
-                  Supported platforms
+                  supported platforms
                   <span
                     className="inline-block transition-transform duration-300"
                     style={{
@@ -930,7 +986,10 @@ function App() {
                           "We use ruhend-scraper for downloading videos."}
                       </p>
                     </div>
-                    <div className="absolute bottom-[5%] left-1/2 -translate-x-1/2 w-[75%]">
+                    <div
+                      className="absolute bottom-[5%] left-1/2 -translate-x-1/2 w-[75%]"
+                      style={{ marginTop: "10px" }}
+                    >
                       <button
                         onClick={() => setSelectedPlatform(null)}
                         className="w-full px-3 py-2 bg-[#161616]/70 backdrop-blur-md rounded-lg border border-[#333333]/50 hover:border-[#444444]/70 transition-colors cursor-pointer text-gray-200"
@@ -1267,11 +1326,13 @@ function App() {
                         id="tracker-text"
                         className="w-full p-3 rounded-lg bg-[#0a0a0a]/60 backdrop-blur-lg border border-[#333333]/50 text-gray-200 resize-none focus:outline-none focus:border-[#444444]/70 transition-colors placeholder-gray-500 text-xs sm:text-base"
                         rows="1"
-                        placeholder="Enter any supported type of link in here..."
+                        placeholder="paste your link here :)"
                         value={result}
                         onChange={handleInputChange}
                         onKeyDown={handleKeyDown}
+                        onPaste={handlePaste}
                         style={{
+                          fontSize: getDynamicFontSize(result),
                           transition:
                             "color 0.2s ease, background-color 0.2s ease",
                           caretColor: currentTheme.accent,
@@ -1296,7 +1357,7 @@ function App() {
                         onMouseUp={handleButtonMouseUp}
                       >
                         <span id="btn-text" className="flex items-center gap-2">
-                          Grab <span className="text-lg sm:text-xl">⚡</span>
+                          grab <span className="text-lg sm:text-xl">⚡</span>
                         </span>
                         <svg
                           id="spinner"
@@ -1350,7 +1411,7 @@ function App() {
                   >
                     <div className="flex items-center justify-between mb-4">
                       <h3 className="text-lg font-semibold text-gray-200">
-                        Ready to Download 🚀
+                        ready to download ✅
                       </h3>
                     </div>
                     <div className="space-y-4">
@@ -1494,7 +1555,10 @@ function App() {
                         <>
                           <div className="bg-[#161616]/70 backdrop-blur-md p-3 rounded-lg border border-[#333333]/50">
                             <p className="text-gray-400 text-sm">Title</p>
-                            <p className="text-gray-200 truncate">
+                            <p
+                              className="text-gray-200 truncate"
+                              style={{ fontSize: "0.9rem" }}
+                            >
                               {mediaInfo.title}
                             </p>
                           </div>
@@ -1548,6 +1612,7 @@ function App() {
                                     : ""
                                 }`}
                                 style={{
+                                  fontSize: "1rem",
                                   backgroundColor: mediaInfo.durationError
                                     ? `${currentTheme.accent}15`
                                     : `${currentTheme.accent}33`,
@@ -1622,6 +1687,7 @@ function App() {
                                     : ""
                                 }`}
                                 style={{
+                                  fontSize: "1rem",
                                   backgroundColor: `${currentTheme.accent}33`,
                                   borderColor: `${currentTheme.accent}66`,
                                   "&:hover": {
@@ -1678,6 +1744,7 @@ function App() {
                               <button
                                 className="px-4 py-2 backdrop-blur-lg text-gray-200 rounded-lg border transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer"
                                 style={{
+                                  fontSize: "1rem",
                                   backgroundColor: `${currentTheme.accent}33`,
                                   borderColor: `${currentTheme.accent}66`,
                                   "&:hover": {

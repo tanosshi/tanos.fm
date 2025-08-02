@@ -21,6 +21,7 @@
     "node-fetch": "^3.3.2",
     "node-id3": "^0.2.8",
     "ruhend-scraper": "^9.0.1",
+    "sanitize-filename": "^1.6.3",
     "sharp": "^0.33.5",
     "soundcloud-downloader": "^1.0.0",
     "soundcloud-key-fetch": "^1.0.13",
@@ -29,6 +30,7 @@
     "twitter-dl": "^1.0.6",
     "twitter-downloader": "^1.1.8",
     "vidzit-dl": "^0.0.2",
-    "ytdl-core": "^4.11.5"
+    "ytdl-core": "^4.11.5",
+    "ytmp3-js": "^1.1.2"
   }
 }

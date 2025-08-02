@@ -1,6 +1,6 @@
 # tanos.fm 📦
 
-Downloads are broken at the moment.
+Somewhat broken, most functions work again though.
 
 ### This project is still under construction, dont bother creating issues
 
@@ -26,9 +26,7 @@ $ npm start
 
 Todo
 
-✔️ Success ⏳ Working on it ❌ Broken
-
-- Downloads ⏳
+✔️ Success ⏳ Mostly working ❌ Lowest priority
 
 - Optimize ffmpeg for the best performance ✔️
 
@@ -38,15 +36,17 @@ Todo
 
 - Create a proper front-end ✔️
 
-- Add more sites ⏳
+- Downloads ⏳
 
-#### oldest + buggiest **static** site (scaling is wrong) at [https://moonlit-malasada-a5e63c.netlify.app/](https://moonlit-malasada-a5e63c.netlify.app/)
+- Add more sites ❌
+
+#### buggy **static** site (inaccurate representation) at [https://moonlit-malasada-a5e63c.netlify.app/](https://moonlit-malasada-a5e63c.netlify.app/)
 
 # Credits
 
 - [tanos](https://github.com/tanosshi) - Frontend and backend 🚧
 - [ruhend-scraper](#) - Scraping API 🕷️
-- [ytdl-core](#) - Scraping and Downloading API
-- [twitter-downloader](#) - Downloading API
-- [soundcloud-downloader](#) - Downloading API
-- [fluent-ffmpeg](#) - Converters
+- [ytdl-core](#) - Scraping and Downloading API 🕷️
+- [twitter-downloader](#) - Downloading API 🕷️
+- [soundcloud-downloader](#) - Downloading API 🕷️
+- [fluent-ffmpeg](#) - Converters 🕷️

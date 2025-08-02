@@ -1,5 +1,7 @@
 "use strict";
 
+// THIS CODE WILL BE REMOVED IN THE FOLLOWING COMMITS, ITS WAY TOO HARD TO KEEP UP TO DATE
+
 const axios = require("axios");
 const cheerio = require("cheerio");
 

@@ -12,3 +12,4 @@ client/src/ol.app.js
 *.bak
 .env
 *env*
+/tmp
