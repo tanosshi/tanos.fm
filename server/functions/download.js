@@ -25,6 +25,9 @@ const SOUNDCLOUD_CLIENT_ID = process.env.SOUNDCLOUD_CLIENT_ID;
 
 const tempFiles = new Set();
 
+const Converter = require("ascii-fullwidth-halfwidth-convert");
+const conv = new Converter();
+
 const sanitizeFilename = (filename) => {
   if (!filename) return "untitled";
   // might aswell make chatgpt do this
@@ -325,17 +328,20 @@ router.get("/", async (req, res) => {
           }
         } else if (format === "mp4") {
           console.log("Downloading MP4 from YouTube");
-
           res.setHeader(
             "Content-Disposition",
-            `attachment; filename="${videoTitle}.mp4"`
+            `attachment; filename="${conv.toHalfWidth(
+              videoTitle.normalize("NFKC")
+            )}.mp4"`
           );
           res.setHeader("Content-Type", "video/mp4");
+          const bestFormat = ytdl.chooseFormat(info.formats, {
+            quality: "highestvideo",
+          });
 
-          const videoStream = ytdl(url, {
+          const videoStream = ytdl.downloadFromInfo(info, {
             ...ytdlOptions,
-            quality: "highest",
-            filter: "audioandvideo",
+            format: bestFormat,
           });
 
           videoStream.on("error", (error) => {

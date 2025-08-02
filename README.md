@@ -22,7 +22,6 @@ _**tanos**'s **f**ree **m**edia is a quick yet ad-free media downloader, made fo
 ## 📸 Preview Gallery
 
 <div align="center">
-  <p><em>(The UI in the image is a couple months old)</em></p>
   <img src="front_end.png" alt="demo ui" width="800px" style="border-radius: 10px; margin: 10px;">
   <p><em>A nice front-end for an eye pleasing experience, made for most modern devices.</em></p>
 </div>
@@ -85,25 +84,26 @@ npm start
 
 <div align="center">
 
-| Feature                      | Status             | Priority | ETA     |
-| ---------------------------- | ------------------ | -------- | ------- |
-| 🔧 FFmpeg Optimization       | ✅ **Complete**    | High     | ✅      |
-| 🎧 Spotify Integration       | ✅ **Complete**    | High     | ✅      |
-| 📺 YouTube Integration       | ✅ **Complete**    | High     | ✅      |
-| 🎶 YouTube Music Integration | ✅ **Complete**    | High     | ✅      |
-| 🎭 TikTok Integration        | ✅ **Complete**    | High     | ✅      |
-| 🐦 Twitter Integration       | ✅ **Complete**    | High     | ✅      |
-| 📷 Instagram Integration     | ✅ **Complete**    | High     | ✅      |
-| ☁️ SoundCloud Integration    | ✅ **Complete**    | High     | ✅      |
-| 🧹 Code Cleanup & UI Polish  | ✅ **Complete**    | High     | ✅      |
-| 💻 Modern Frontend           | ✅ **Complete**    | High     | ✅      |
-| 📥 Download System           | ✅ **Complete**    | High     | ✅      |
-| 🎨 Enhanced UI Details       | ✅ **Complete**    | Medium   | ✅      |
-| 📹 HD Video Downloads        | ⏳ **In Progress** | Medium   | 2 weeks |
-| 📌 Pinterest Integration     | 🔄 **Planned**     | Low      | TBD     |
-| 🌐 Even more Platforms       | 🔄 **Planned**     | Low      | TBD     |
-| 🎤 Lyrics Fix                | 🔄 **Planned**     | Low      | TBD     |
-| 🔑 API Keys for projects     | 💤 **Planned**     | Lowest   | TBD     |
+| Feature                      | Status             | Priority | ETA |
+| ---------------------------- | ------------------ | -------- | --- |
+| 🔧 FFmpeg Optimization       | ✅ **Complete**    | High     | ✅  |
+| 🎧 Spotify Integration       | ✅ **Complete**    | High     | ✅  |
+| 📺 YouTube Integration       | ✅ **Complete**    | High     | ✅  |
+| 🎶 YouTube Music Integration | ✅ **Complete**    | High     | ✅  |
+| 🎭 TikTok Integration        | ✅ **Complete**    | High     | ✅  |
+| 🐦 Twitter Integration       | ✅ **Complete**    | High     | ✅  |
+| 📷 Instagram Integration     | ✅ **Complete**    | High     | ✅  |
+| ☁️ SoundCloud Integration    | ✅ **Complete**    | High     | ✅  |
+| 🧹 Code Cleanup & UI Polish  | ✅ **Complete**    | High     | ✅  |
+| 💻 Modern Frontend           | ✅ **Complete**    | High     | ✅  |
+| 📥 Download System           | ✅ **Complete**    | High     | ✅  |
+| 🎨 Enhanced UI Details       | ✅ **Complete**    | Medium   | ✅  |
+| 📹 HD Video Downloads        | ✅ **Complete**    | Medium   | ✅  |
+| 📌 Pinterest Integration     | ⏳ **In Progress** | Medium   | ⏳  |
+| 🤖 Reddit Integration        | ⏳ **In Progress** | Low      | ⏳  |
+| 🎤 Lyrics Fix                | 🔄 **Planned**     | Low      | TBD |
+| 🌐 Even more platforms       | 🔄 **Planned**     | Lowest   | TBD |
+| 🔑 API Keys for projects     | 💤 **Planned**     | Lowest   | TBD |
 
 </div>
 
@@ -148,13 +148,13 @@ npm start
 
 This may be a little bit outdated, but still accurate.
 
-| Package                   | Purpose                     | Version |
-| ------------------------- | --------------------------- | ------- |
-| **ruhend-scraper**        | 🕷️ Advanced web scraping    | Latest  |
-| **ytdl-core**             | 📺 YouTube processing       | Latest  |
-| **twitter-downloader**    | 🐦 Twitter media extraction | Latest  |
-| **soundcloud-downloader** | 🎵 SoundCloud integration   | Latest  |
-| **fluent-ffmpeg**         | 🎬 Media conversion engine  | Latest  |
+| Package                   | Purpose                     |
+| ------------------------- | --------------------------- |
+| **ruhend-scraper**        | 🕷️ Advanced web scraping    |
+| **ytdl-core**             | 📺 YouTube processing       |
+| **twitter-downloader**    | 🐦 Twitter media extraction |
+| **soundcloud-downloader** | 🎵 SoundCloud integration   |
+| **fluent-ffmpeg**         | 🎬 Media conversion engine  |
 
 ---
 

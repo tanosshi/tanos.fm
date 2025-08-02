@@ -28,8 +28,7 @@ async function getYoutubeInfo(url, isMusic = false) {
       });
     } else {
       bestFormat = ytdl.chooseFormat(info.formats, {
-        quality: "highest",
-        filter: "audioandvideo",
+        quality: "highestvideo",
       });
 
       if (!bestFormat) {
@@ -40,10 +39,7 @@ async function getYoutubeInfo(url, isMusic = false) {
       }
     }
 
-    if (!bestFormat) {
-      console.error("No format found after selection process");
-      throw new Error("No suitable format found");
-    }
+    if (!bestFormat) throw new Error("No suitable format found");
 
     let estimatedSize = "Unknown";
     if (bestFormat.contentLength) {
