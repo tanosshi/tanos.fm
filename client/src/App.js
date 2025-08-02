@@ -1,7 +1,7 @@
 /** @file App.js
  * @description The front-end for tanos.fm, made to be eye pleasing.
- * TODO: Minify the code, split the singular JavaScript file into multiple files.
- * TODO: More site functionality
+ * TODO: 1. Minify the code, split the singular JavaScript file into multiple files.
+ * TODO: 2. More site functionality
  */
 
 import React, { useState, useEffect, useRef } from "react";
@@ -549,6 +549,7 @@ function App() {
     }
   }, [mediaInfo]);
 
+  // ================================ Begin ================================ //
   return (
     <div
       className="flex items-center justify-center min-h-screen w-full relative overflow-x-hidden"
@@ -597,6 +598,7 @@ function App() {
         />
       )}
 
+      {/* Notification panel */}
       <div
         id="notification"
         className={`fixed backdrop-blur-m backdrop-saturate-150 top-6 left-1/2 -translate-x-1/2 p-4 rounded-lg border transition-all duration-300 z-[100] ease-in-out max-w-[90%] ${
@@ -789,7 +791,7 @@ function App() {
                 </div>
               </div>
             </div>
-
+            {/* Main contents top */}
             <div
               className={`w-full transition-all duration-500 ${
                 showDonationMenu
@@ -862,6 +864,7 @@ function App() {
                   </span>
                 </button>
               </div>
+              {/* Supported platforms, aka whats there to offer. */}
               <div
                 className={`w-full overflow-hidden transition-all duration-500 ${
                   showSupported
@@ -1038,7 +1041,7 @@ function App() {
                   </div>
                 </div>
               </div>
-
+              {/* Terms of Service on first launch */}
               {!hasAgreedToTerms ? (
                 <div
                   className={`w-full space-y-4 transition-all duration-500 bouncy-appear`}
@@ -1175,18 +1178,13 @@ function App() {
                   </div>
                   <button
                     onClick={() => {
-                      // Show the loading spinner
                       setIsAgreeing(true);
-                      
-                      // Start the fade out after a short delay
+
                       setTimeout(() => {
-                        // Close any open terms/privacy sections
                         setShowTerms(false);
                         setShowPrivacy(false);
-                        // Start the fade out animation
                         setIsFadingOut(true);
-                        
-                        // After fade out completes, update the state
+
                         setTimeout(() => {
                           localStorage.setItem("hasAgreedToTerms", "true");
                           setHasAgreedToTerms(true);
@@ -1206,10 +1204,18 @@ function App() {
                     onMouseUp={handleButtonMouseUp}
                   >
                     <span className="flex items-center gap-2">
-                      <span className={`transition-opacity duration-300 ${isAgreeing ? 'opacity-0' : 'opacity-100'}`}>
+                      <span
+                        className={`transition-opacity duration-300 ${
+                          isAgreeing ? "opacity-0" : "opacity-100"
+                        }`}
+                      >
                         I Agree
                       </span>
-                      <span className={`transition-opacity duration-300 ${isAgreeing ? 'opacity-100' : 'opacity-0'}`}>
+                      <span
+                        className={`transition-opacity duration-300 ${
+                          isAgreeing ? "opacity-100" : "opacity-0"
+                        }`}
+                      >
                         <svg
                           className="animate-spin h-5 w-5 text-white"
                           xmlns="http://www.w3.org/2000/svg"
@@ -1243,6 +1249,7 @@ function App() {
                     transition: "all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)",
                   }}
                 >
+                  {/* Lyrics panel */}
                   {showRomanizedPopup ? (
                     <div className="w-full space-y-4 pop-appear">
                       <div className="p-4 bg-[#0a0a0a]/60 backdrop-blur-lg rounded-lg border border-[#333333]/50">
@@ -1416,6 +1423,7 @@ function App() {
                     </div>
                   ) : (
                     <>
+                      {/* Main contents */}
                       <textarea
                         id="tracker-text"
                         className="w-full p-3 rounded-lg bg-[#0a0a0a]/60 backdrop-blur-lg border border-[#333333]/50 text-gray-200 resize-none focus:outline-none focus:border-[#444444]/70 transition-colors placeholder-gray-500 text-xs sm:text-base"
@@ -1480,8 +1488,7 @@ function App() {
                   )}
                 </div>
               )}
-
-              {/* ...mediaInfo download panel... */}
+              {/* Download panel where mediainfo will be used */}
               {mediaInfo && (
                 <div
                   className="w-full overflow-hidden transition-all duration-1200 ease-in-out max-h-96 mt-6 bouncy-appear"
@@ -1938,6 +1945,7 @@ function App() {
               )}
             </div>
           </div>
+          {/* Text below the main panel */}
           <div className="flex flex-col items-center gap-2 mt-6 float-appear">
             <button
               onClick={() => {
@@ -1977,6 +1985,7 @@ function App() {
           </div>
         </div>
       </div>
+      {/* Versioning */}
       <div className="absolute bottom-5 right-7 text-gray-200 text-sm z-11 opacity-7 hidden sm:block">
         v1.0.a4
       </div>
