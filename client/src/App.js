@@ -1,8 +1,6 @@
 /** @file App.js
  * @description The front-end for tanos.fm, made to be eye pleasing.
  * TODO: Minify the code, split the singular JavaScript file into multiple files.
- * TODO: Upgrade the UI to be even more eye-pleasing.
- * TODO: More animations
  * TODO: More site functionality
  */
 
@@ -50,6 +48,17 @@ const getSelectionStyles = (theme) => `
 
 const themes = [
   {
+    name: "tanos's pink",
+    bg: "#1a121a",
+    card: "#251a25",
+    cardInner: "#351f35",
+    accent: "#ff80bf",
+    border: "#4a2d4a",
+    emoji: "🌸",
+    backgroundImage: "/images/puresakura.png",
+    backgroundBlur: "25px",
+  },
+  {
     name: "Dark",
     bg: "#0a0a0a",
     card: "#111111",
@@ -61,24 +70,15 @@ const themes = [
     backgroundBlur: "25px",
   },
   {
-    name: "AMOLED",
-    bg: "#000000",
-    card: "#000000",
-    cardInner: "#0a0a0a",
-    accent: "#ffffff",
-    border: "#222222",
-    emoji: "🌸",
-  },
-  {
-    name: "tanos's pink",
-    bg: "#1a121a",
-    card: "#251a25",
-    cardInner: "#351f35",
-    accent: "#ff80bf",
-    border: "#4a2d4a",
-    emoji: "🌸",
-    backgroundImage: "/images/puresakura.png",
-    backgroundBlur: "25px",
+    name: "Purple",
+    bg: "#1a0c1a",
+    card: "#2f1a2f",
+    cardInner: "#472e47",
+    accent: "#e07fff",
+    border: "#543954",
+    emoji: "💜",
+    backgroundImage: "/images/purple.png",
+    backgroundBlur: "10px",
   },
   {
     name: "Turquoise",
@@ -102,17 +102,6 @@ const themes = [
     backgroundImage: "./images/puresakura.png",
     backgroundBlur: "40px",
   },
-  {
-    name: "Purple",
-    bg: "#1a0c1a",
-    card: "#2f1a2f",
-    cardInner: "#472e47",
-    accent: "#e07fff",
-    border: "#543954",
-    emoji: "💜",
-    backgroundImage: "/images/purple.png",
-    backgroundBlur: "10px",
-  },
 ];
 
 function App() {
@@ -133,12 +122,13 @@ function App() {
   const [rotation, setRotation] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
   const [glowIntensity, setGlowIntensity] = useState(0.31);
+  const [isAgreeing, setIsAgreeing] = useState(false);
   const [hasAgreedToTerms, setHasAgreedToTerms] = useState(() => {
     return localStorage.getItem("hasAgreedToTerms") === "true";
   });
   const [currentThemeIndex, setCurrentThemeIndex] = useState(() => {
     const savedTheme = localStorage.getItem("selectedTheme");
-    return savedTheme ? parseInt(savedTheme) : 2;
+    return savedTheme ? parseInt(savedTheme) : 0;
   });
   const [showDownloadPanel, setShowDownloadPanel] = useState(false);
 
@@ -384,10 +374,11 @@ function App() {
   };
 
   const placeholders = [
-    "paste your link here :)",
+    "paste your link here",
     "enter your link here !",
     "enter any url here :3",
-    "place your url in here ;))",
+    "place your url in here ;)",
+    "what would you want to download?",
     "what would you want to download?",
   ];
   const [randomPlaceholderText] = React.useState(
@@ -560,7 +551,7 @@ function App() {
 
   return (
     <div
-      className="flex items-center justify-center min-h-screen w-full relative overflow-x-hidden scale-[0.5] sm:scale-50"
+      className="flex items-center justify-center min-h-screen w-full relative overflow-x-hidden"
       style={{
         backgroundColor: currentTheme.bg,
         backgroundImage: currentTheme.backgroundImage
@@ -576,8 +567,17 @@ function App() {
         WebkitTransform: "translateZ(0)",
         WebkitPerspective: 1000,
         perspective: 1000,
+        animation: "fadeInBg 0.4s cubic-bezier(0.34,1.56,0.64,1) both",
       }}
     >
+      <style>
+        {`
+        @keyframes glowPulse {
+          0% { drop-shadow: 0 0 0px ${currentTheme.accent}44; }
+          100% { drop-shadow: 0 0 16px ${currentTheme.accent}99; }
+        }
+        `}
+      </style>
       {currentTheme.backgroundBlur && (
         <div
           className="fixed inset-0"
@@ -592,26 +592,33 @@ function App() {
             WebkitTransform: "translateZ(0)",
             WebkitPerspective: 1000,
             perspective: 1000,
+            animation: "fadeInBg 0.4s 0.1s both",
           }}
         />
       )}
 
       <div
         id="notification"
-        className={`fixed backdrop-blur-xl backdrop-saturate-150 top-6 left-1/2 -translate-x-1/2 p-4 rounded-lg border transition-all duration-300 z-[100] ease-in-out max-w-[90%] ${
+        className={`fixed backdrop-blur-m backdrop-saturate-150 top-6 left-1/2 -translate-x-1/2 p-4 rounded-lg border transition-all duration-300 z-[100] ease-in-out max-w-[90%] ${
           notification.show
             ? "opacity-60 translate-y-0"
             : "opacity-0 -translate-y-4"
         } ${
           notification.isValid
-            ? `bg-[rgba(37,26,37,0.7)] border-[border-color: rgba(74, 45, 74, 0.5)] text-white`
-            : `bg-[rgba(37,26,37,0.7)] border-[border-color: rgba(74, 45, 74, 0.5)] text-white`
+            ? `bg-[rgba(37,26,37,0.7)] border-[border-color: rgba(74, 45, 74, 0.2)] text-white`
+            : `bg-[rgba(37,26,37,0.7)] border-[border-color: rgba(74, 45, 74, 0.2)] text-white`
         }`}
+        style={{
+          filter: notification.show ? "drop-shadow(0 0 12px #fff6)" : "none",
+        }}
       >
         {notification.message}
       </div>
 
-      <div className="flex items-start justify-center w-full px-4 relative z-10">
+      <div
+        className="flex items-start justify-center w-full px-4 relative z-10"
+        style={{ zoom: "0.94" }}
+      >
         <div className="flex flex-col items-center w-full max-w-[600px]">
           <div
             style={{
@@ -625,28 +632,33 @@ function App() {
               WebkitTransform: "translateZ(0)",
               WebkitPerspective: 1000,
               perspective: 1000,
+              boxShadow: `0 8px 32px 0 ${currentTheme.accent}22, 0 1.5px 4px 0 rgba(0,0,0,0.12)`,
+              animation: "bounceIn 1.1s cubic-bezier(0.34,1.56,0.64,1) both",
             }}
-            className="backdrop-blur-xl backdrop-saturate-150 p-4 sm:p-8 rounded-xl border flex flex-col items-center w-full shadow-xl relative overflow-hidden"
+            className="backdrop-blur-xl backdrop-saturate-150 p-4 sm:p-8 rounded-xl border flex flex-col items-center w-full shadow-xl relative overflow-hidden bouncy-appear"
           >
+            {/* Donation menu and animated panels */}
             <div
-              className={`absolute inset-0 w-full h-full flex flex-col items-center transition-all duration-500 ${
+              className={`absolute inset-0 w-full h-full flex flex-col items-center ${
                 showDonationMenu
-                  ? "translate-x-0 opacity-100 pointer-events-auto"
-                  : "translate-x-[100%] opacity-0 pointer-events-none"
+                  ? "opacity-100 pointer-events-auto pop-appear"
+                  : "opacity-0 pointer-events-none"
               }`}
               style={{
-                transition: "all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)",
+                transition: "all 0.7s cubic-bezier(0.34, 1.26, 0.34, 1.4)",
                 zIndex: 21,
                 transform: showDonationMenu
-                  ? "translateZ(0) translateX(0)"
-                  : "translateZ(0) translateX(100%)",
+                  ? "translateZ(0) translateX(0) scale(1)"
+                  : "translateZ(0) translateX(100%) scale(0.95)",
                 backfaceVisibility: "hidden",
                 WebkitBackfaceVisibility: "hidden",
                 WebkitTransform: showDonationMenu
-                  ? "translateZ(0) translateX(0)"
-                  : "translateZ(0) translateX(100%)",
+                  ? "translateZ(0) translateX(0) scale(1)"
+                  : "translateZ(0) translateX(100%) scale(0.95)",
                 WebkitPerspective: 1000,
                 perspective: 1000,
+                transformOrigin: "center",
+                willChange: "transform, opacity",
               }}
             >
               <div className="flex flex-col items-center w-full gap-4 p-4 sm:p-8">
@@ -788,10 +800,10 @@ function App() {
                 transition: "all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)",
               }}
             >
-              <div className="flex flex-col items-center space-y-2 mb-6">
+              <div className="flex flex-col items-center space-y-2 mb-6 float-appear">
                 <span
                   id="emoji"
-                  className="text-4xl sm:text-6xl filter drop-shadow-lg relative cursor-pointer"
+                  className="text-4xl sm:text-6xl filter drop-shadow-lg relative cursor-pointer glow-anim"
                   style={{
                     filter: `drop-shadow(0 0 8px ${
                       currentTheme.accent
@@ -799,9 +811,11 @@ function App() {
                     textShadow: `0 0 10px ${currentTheme.accent}${Math.round(
                       glowIntensity * 255
                     ).toString(16)}`,
-                    transform: `rotate(${rotation}deg)`,
+                    transform: `rotate(${rotation}deg) scale(${
+                      isHovered ? 1.15 : 1
+                    })`,
                     transition:
-                      "transform 0.1s linear, filter 0.3s ease-in-out, text-shadow 0.3s ease-in-out",
+                      "transform 0.25s cubic-bezier(0.34,1.56,0.64,1), filter 0.3s, text-shadow 0.3s",
                   }}
                   onMouseEnter={handleEmojiHover}
                   onMouseLeave={handleEmojiLeave}
@@ -814,11 +828,18 @@ function App() {
                   style={{
                     marginBottom: "0",
                     marginTop: "5px",
+                    letterSpacing: "0.03em",
+                    animation: "popIn 0.7s 0.1s both",
                   }}
                 >
                   tanos's free media
                 </h1>
-                <p className="text-sm sm:text-base text-gray-400 text-center">
+                <p
+                  className="text-sm sm:text-base text-gray-400 text-center"
+                  style={{
+                    animation: "floatUp 1.2s 0.2s both",
+                  }}
+                >
                   a quick yet ad-free media downloader
                 </p>
                 <button
@@ -826,6 +847,9 @@ function App() {
                   onClick={() =>
                     setShowSupported(!showSupported) & setSelectedPlatform(null)
                   }
+                  style={{
+                    animation: "popIn 0.7s 0.2s both",
+                  }}
                 >
                   supported platforms
                   <span
@@ -838,7 +862,6 @@ function App() {
                   </span>
                 </button>
               </div>
-
               <div
                 className={`w-full overflow-hidden transition-all duration-500 ${
                   showSupported
@@ -980,7 +1003,6 @@ function App() {
                         {selectedPlatform === "youtube" && "🎬 YouTube"}
                         {selectedPlatform === "soundcloud" && "☁️ SoundCloud"}
                         {selectedPlatform === "spotify" && "💚 Spotify"}
-                        {selectedPlatform === "anime" && "🍿 Animes"}
                         {selectedPlatform === "lyrics" && "📝 Lyrics"}
                         {selectedPlatform === "social" && "🌐 Social Media"}
                       </h3>
@@ -1019,7 +1041,7 @@ function App() {
 
               {!hasAgreedToTerms ? (
                 <div
-                  className={`w-full space-y-4 transition-all duration-500`}
+                  className={`w-full space-y-4 transition-all duration-500 bouncy-appear`}
                   style={{
                     opacity: isFadingOut ? 0 : 1,
                     transform: `translateY(${isFadingOut ? "-10px" : "0"})`,
@@ -1151,33 +1173,70 @@ function App() {
                       </div>
                     </div>
                   </div>
-
                   <button
                     onClick={() => {
-                      setIsFadingOut(true);
+                      // Show the loading spinner
+                      setIsAgreeing(true);
+                      
+                      // Start the fade out after a short delay
                       setTimeout(() => {
-                        localStorage.setItem("hasAgreedToTerms", "true");
-                        setHasAgreedToTerms(true);
-                      }, 500);
+                        // Close any open terms/privacy sections
+                        setShowTerms(false);
+                        setShowPrivacy(false);
+                        // Start the fade out animation
+                        setIsFadingOut(true);
+                        
+                        // After fade out completes, update the state
+                        setTimeout(() => {
+                          localStorage.setItem("hasAgreedToTerms", "true");
+                          setHasAgreedToTerms(true);
+                          setIsAgreeing(false);
+                        }, 300);
+                      }, 1000);
                     }}
-                    className="w-full px-12 py-3 backdrop-blur-lg text-gray-200 rounded-lg border flex items-center text-lg justify-center cursor-pointer"
+                    className="w-full px-12 py-3 backdrop-blur-lg text-gray-200 rounded-lg border flex items-center text-lg justify-center cursor-pointer pop-appear"
                     style={{
                       backgroundColor: `${currentTheme.accent}33`,
                       borderColor: `${currentTheme.accent}66`,
                       transform: `scale(${buttonScale})`,
                       transition: "all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)",
+                      boxShadow: `0 2px 16px 0 ${currentTheme.accent}22`,
                     }}
                     onMouseDown={handleButtonMouseDown}
                     onMouseUp={handleButtonMouseUp}
                   >
                     <span className="flex items-center gap-2">
-                      I Agree <span className="text-xl">✓</span>
+                      <span className={`transition-opacity duration-300 ${isAgreeing ? 'opacity-0' : 'opacity-100'}`}>
+                        I Agree
+                      </span>
+                      <span className={`transition-opacity duration-300 ${isAgreeing ? 'opacity-100' : 'opacity-0'}`}>
+                        <svg
+                          className="animate-spin h-5 w-5 text-white"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          ></path>
+                        </svg>
+                      </span>
                     </span>
                   </button>
                 </div>
               ) : (
                 <div
-                  className={`w-full transition-all duration-500`}
+                  className={`w-full transition-all duration-500 bouncy-appear`}
                   style={{
                     opacity: hasAgreedToTerms ? 1 : 0,
                     transform: `translateY(${hasAgreedToTerms ? "0" : "10px"})`,
@@ -1185,7 +1244,7 @@ function App() {
                   }}
                 >
                   {showRomanizedPopup ? (
-                    <div className="w-full space-y-4">
+                    <div className="w-full space-y-4 pop-appear">
                       <div className="p-4 bg-[#0a0a0a]/60 backdrop-blur-lg rounded-lg border border-[#333333]/50">
                         <h3 className="text-lg font-semibold text-gray-200 mb-2">
                           Download Options
@@ -1371,6 +1430,7 @@ function App() {
                           transition:
                             "color 0.2s ease, background-color 0.2s ease",
                           caretColor: currentTheme.accent,
+                          boxShadow: "0 2px 12px 0 #0002",
                         }}
                       />
 
@@ -1382,11 +1442,9 @@ function App() {
                           backgroundColor: `${currentTheme.accent}33`,
                           borderColor: `${currentTheme.accent}66`,
                           transform: `scale(${buttonScale})`,
-                          transition: "transform 0.2s ease",
-                          "&:hover": {
-                            backgroundColor: `${currentTheme.accent}44`,
-                            borderColor: `${currentTheme.accent}88`,
-                          },
+                          transition:
+                            "transform 0.2s cubic-bezier(0.34,1.56,0.64,1)",
+                          boxShadow: `0 2px 16px 0 ${currentTheme.accent}22`,
                         }}
                         onMouseDown={handleButtonMouseDown}
                         onMouseUp={handleButtonMouseUp}
@@ -1414,7 +1472,7 @@ function App() {
                           <path
                             className="opacity-75"
                             fill="currentColor"
-                            d="M4 12a8 8 0 018-8v8H4z"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
                           ></path>
                         </svg>
                       </button>
@@ -1423,9 +1481,10 @@ function App() {
                 </div>
               )}
 
+              {/* ...mediaInfo download panel... */}
               {mediaInfo && (
                 <div
-                  className="w-full overflow-hidden transition-all duration-1200 ease-in-out max-h-96 mt-6"
+                  className="w-full overflow-hidden transition-all duration-1200 ease-in-out max-h-96 mt-6 bouncy-appear"
                   style={{
                     transition: "all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)",
                     transform: showDownloadPanel
@@ -1879,14 +1938,18 @@ function App() {
               )}
             </div>
           </div>
-          <div className="flex flex-col items-center gap-2 mt-6">
+          <div className="flex flex-col items-center gap-2 mt-6 float-appear">
             <button
               onClick={() => {
                 setShowDonationMenu(true);
                 setMediaInfo(null);
                 setShowSupported(false);
               }}
-              className="text-gray-400 hover:text-gray-200 transition-colors text-sm flex items-center gap-2 cursor-pointer"
+              className="text-gray-400 hover:text-gray-200 transition-colors text-sm flex items-center gap-2 cursor-pointer pop-appear"
+              style={{
+                filter: "drop-shadow(0 0 6px #fff2)",
+                animation: "popIn 0.7s 0.2s both",
+              }}
             >
               <div className="relative overflow-hidden group">
                 <span className="relative z-10">
@@ -1904,7 +1967,10 @@ function App() {
             </button>
             <button
               onClick={cycleTheme}
-              className="text-gray-400 hover:text-gray-200 transition-colors text-sm flex items-center gap-2 cursor-pointer"
+              className="text-gray-400 hover:text-gray-200 transition-colors text-sm flex items-center gap-2 cursor-pointer pop-appear"
+              style={{
+                animation: "popIn 0.7s 0.3s both",
+              }}
             >
               cycle theme by pressing here ({currentTheme.name})
             </button>

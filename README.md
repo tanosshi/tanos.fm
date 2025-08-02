@@ -24,7 +24,7 @@ Todo
 
 ✔️ Success ⏳ Working on it ❌ Lowest priority
 
-- Optimize ffmpeg for the best performance ✔️
+- Optimize FFmpeg for the best performance ✔️
 
 - Find a way to make Spotify work ✔️
 
@@ -34,9 +34,13 @@ Todo
 
 - Downloads ✔️
 
-- Higher quality downloads ⏳
+- Increase UI details ✔️
+
+- Higher quality video downloads ⏳
 
 - Add more sites ❌
+
+- Fix lyrics ❌
 
 #### buggy **static** site (inaccurate representation) at [https://moonlit-malasada-a5e63c.netlify.app/](https://moonlit-malasada-a5e63c.netlify.app/)
 
