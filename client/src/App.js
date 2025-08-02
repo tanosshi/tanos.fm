@@ -3,6 +3,7 @@
  * TODO: Minify the code, split the singular JavaScript file into multiple files.
  * TODO: Upgrade the UI to be even more eye-pleasing.
  * TODO: More animations
+ * TODO: More site functionality
  */
 
 import React, { useState, useEffect, useRef } from "react";
@@ -142,7 +143,6 @@ function App() {
   const [showDownloadPanel, setShowDownloadPanel] = useState(false);
 
   const [buttonScale, setButtonScale] = useState(1);
-  const [isButtonPressed, setIsButtonPressed] = useState(false);
 
   const glintAnimation = `
     @keyframes glint {
@@ -159,13 +159,11 @@ function App() {
   `;
 
   const handleButtonMouseDown = () => {
-    setIsButtonPressed(true);
     setButtonScale(0.92);
     setTimeout(() => {
       setButtonScale(1.01);
       setTimeout(() => {
         setButtonScale(1);
-        setIsButtonPressed(false);
       }, 120);
     }, 90);
   };
@@ -174,23 +172,11 @@ function App() {
     setButtonScale(1.01);
     setTimeout(() => {
       setButtonScale(1);
-      setIsButtonPressed(false);
     }, 100);
   };
 
   const handlePaste = (e) => {
-    setTimeout(() => {
-      fetchData();
-      setButtonScale(0.94);
-      setTimeout(() => {
-        setButtonScale(1);
-      }, 100);
-
-      e.target.style.animation = "glint 1s forwards";
-      setTimeout(() => {
-        e.target.style.animation = "";
-      }, 1000);
-    }, 250);
+    // i lowk forgot
   };
 
   const handleKeyDown = (e) => {

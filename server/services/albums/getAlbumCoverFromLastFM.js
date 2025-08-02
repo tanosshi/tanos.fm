@@ -11,10 +11,8 @@ async function getAlbumCoverFromLastFM(artist, track, apiKey) {
     const response = await axios.get(url);
     const trackData = response.data.track;
 
-    let genre = null;
-    if (trackData && trackData.tags && trackData.tags.tag) {
-      genre = trackData.tags.tag[0].name;
-    }
+    // console.log("LastFM Track Data:", trackData);
+    //console.log("LastFM response:", response.data);
 
     let imageData = null;
     if (trackData && trackData.album && trackData.album.image) {
@@ -29,7 +27,9 @@ async function getAlbumCoverFromLastFM(artist, track, apiKey) {
         });
         return {
           imageBuffer: imageResponse.data,
-          genre: genre,
+          genre:
+            trackData.toptags.tag.slice(0, 1).map((tag) => tag.name) ||
+            "Unknown",
         };
       }
     }
@@ -37,7 +37,11 @@ async function getAlbumCoverFromLastFM(artist, track, apiKey) {
   } catch (error) {
     console.error("Error getting LastFM artwork:", error);
     artworkFailed = true;
-    return { imageBuffer: null, genre: null };
+    return {
+      imageBuffer: null,
+      genre:
+        trackData.toptags.tag.slice(0, 1).map((tag) => tag.name) || "Unknown",
+    };
   }
 }
 

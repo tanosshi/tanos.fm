@@ -1,1 +1,9 @@
-[]
+[
+  {
+    "timestamp": "2025-08-02T13:23:41.376Z",
+    "url": "https://music.youtube.com/watch?v=mgzau4Tglzk&si=ly8ENoa3o3hc0VlC",
+    "success": true,
+    "mediaType": "youtube",
+    "userIP": "::ffff:127.0.0.1"
+  }
+]

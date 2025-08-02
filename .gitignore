@@ -14,3 +14,4 @@ client/src/ol.app.js
 *env*
 /tmp
 server/functions/history.json
+*temp_*.*

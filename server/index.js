@@ -92,7 +92,6 @@ app.get("*", (req, res) => {
 app.use(rateLimiter);
 
 // -- Small utility to clean up generated files
-const tempFiles = new Set();
 const cleanupTempFiles = () => {
   const tempFilePatterns = [
     /^temp_cover_.*\.png$/,
@@ -108,8 +107,8 @@ const cleanupTempFiles = () => {
     "./client",
     "../server",
     "../client",
-    "../tmp",
-    "../temp",
+    "../server/functions",
+    "./functions",
     "./temp",
     "./tmp",
   ];

@@ -1,9 +1,6 @@
 /** @file download.js
  * @description Handles downloading media files from various sources.
- * TODO: [Line 111] Add as many metadata to the mp3 downloading as possible.
  * TODO: Fix low quality YouTube downloads.
- * TODO: Clean up the code, remove unused variables and imports.
- * TODO: Add more error handling and logging.
  */
 
 const express = require("express");
@@ -11,7 +8,12 @@ const router = express.Router();
 const scdl = require("soundcloud-downloader").default;
 const ytdl = require("@distube/ytdl-core");
 const { TwitterDL } = require("twitter-downloader");
+const { Readable } = require("stream");
 const axios = require("axios");
+const fs = require("fs");
+const path = require("path");
+const sharp = require("sharp");
+const crypto = require("crypto");
 const getSpotifyAccessToken = require("../services/info/getSpotifyAccessToken.js");
 const getSpotifyInfo = require("../services/info/getSpotifyInfo.js");
 
@@ -21,16 +23,27 @@ const getAlbumCoverFromSoundCloud = require("../services/albums/getAlbumCoverFro
 const ffmpeg = require("fluent-ffmpeg");
 const SOUNDCLOUD_CLIENT_ID = process.env.SOUNDCLOUD_CLIENT_ID;
 
+const tempFiles = new Set();
+
 const sanitizeFilename = (filename) => {
   if (!filename) return "untitled";
   // might aswell make chatgpt do this
   return (
     filename
       .replace(/[<>:"/\\|?*\x00-\x1F]/g, "_") // Remove invalid Windows filename characters
-      .replace(/\s+/g, "_") // Replace spaces with underscores
       .replace(/[\u{0080}-\u{FFFF}]/gu, "") // Remove non-ASCII characters
       .replace(/_+/g, "_") // Replace multiple underscores with a single one
       .replace(/^[_.]|[_.]$/g, "") // Remove leading/trailing dots and underscores
+      .replace("- EP", "")
+      .replace("- Single", "")
+      .replace("- Album", "")
+      .replace("- Playlist", "")
+      .replace("- Video", "")
+      .replace("- Official", "")
+      .replace("- Official Music Video", "")
+      .replace("- Lyrics", "")
+      .replace("- Live", "")
+      .replace("- Topic", "")
       .substring(0, 100) // Limit length to 100 characters
       .trim() || "untitled"
   ); // Fallback to 'untitled' if empty after sanitization
@@ -103,10 +116,6 @@ router.get("/", async (req, res) => {
           });
         }
 
-        let artworkFailed = false;
-        let imageBuffer = null;
-        let genre = null;
-
         const info = await ytdl.getInfo(ytdl.getURLVideoID(url));
         const videoTitle = sanitizeFilename(info.videoDetails.title);
 
@@ -118,6 +127,42 @@ router.get("/", async (req, res) => {
           );
 
           console.log(`Downloading MP3: ${videoTitle} by ${author}`);
+
+          let artworkFailed = false;
+          let imageBuffer = null;
+          let genre = null;
+          try {
+            const lastFMData = await getAlbumCoverFromLastFM(
+              author,
+              videoTitle,
+              process.env.LASTFM_API_KEY
+            );
+            genre = lastFMData.genre;
+            console.log(lastFMData);
+            imageBuffer = lastFMData.imageBuffer;
+          } catch (error) {
+            console.log("Failed to get LastFM artwork:", error);
+            artworkFailed = true;
+          }
+
+          if (!imageBuffer && !artworkFailed) {
+            try {
+              console.log(
+                "No album data found on Last.fm, trying SoundCloud..."
+              );
+              imageBuffer = await getAlbumCoverFromSoundCloud(
+                author,
+                videoTitle
+              );
+              if (!imageBuffer) {
+                console.log("No artwork found on SoundCloud either.");
+                artworkFailed = true;
+              }
+            } catch (error) {
+              console.log("Failed to get SoundCloud artwork:", error);
+              artworkFailed = true;
+            }
+          }
 
           const safeFilename = `${videoTitle}.mp3`;
           res.setHeader(
@@ -165,18 +210,119 @@ router.get("/", async (req, res) => {
               .trim();
           };
 
-          ffmpegCommand.outputOptions([
-            "-metadata",
-            `title=${escapeMetadata(videoTitle)}`,
-            "-metadata",
-            `artist=${escapeMetadata(author)}`,
-            "-metadata",
-            `album=${escapeMetadata(videoTitle)}`,
-            "-metadata",
-            "comment=Downloaded via tanos.fm",
-          ]);
+          if (!imageBuffer || artworkFailed) {
+            ffmpegCommand.outputOptions([
+              "-metadata",
+              `title=${escapeMetadata(videoTitle)}`,
+              "-metadata",
+              `artist=${escapeMetadata(author)}`,
+              "-metadata",
+              `album=${escapeMetadata(videoTitle)}`,
+              "-metadata",
+              "comment=Downloaded via tanos.fm - No Artwork",
+            ]);
 
-          ffmpegCommand.pipe(res, { end: true });
+            return ffmpegCommand.pipe(res, { end: true });
+          }
+          try {
+            const pngBuffer = await sharp(imageBuffer).png().toBuffer();
+            if (!pngBuffer) pngBuffer = imageBuffer;
+
+            console.log("Sharp processing complete.");
+            const randomFileName = crypto.randomBytes(16).toString("hex");
+            const tempImagePath = path.join(
+              __dirname,
+              `temp_cover_${randomFileName}.png`
+            );
+            const tempOutputPath = path.join(
+              __dirname,
+              `temp_output_${randomFileName}.mp3`
+            );
+
+            tempFiles.add({ path: tempImagePath, timestamp: Date.now() });
+            tempFiles.add({ path: tempOutputPath, timestamp: Date.now() });
+
+            console.log(`Writing temp image to: ${tempImagePath}`);
+            fs.writeFileSync(tempImagePath, pngBuffer);
+            console.log("Temp image written.");
+
+            ffmpeg()
+              .input(audioStream)
+              .input(tempImagePath)
+              .audioCodec("libmp3lame")
+              .audioBitrate("320k")
+              .addOutputOption("-id3v2_version", "3")
+              .addOutputOption("-map", "0:a")
+              .addOutputOption("-map", "1")
+              .addOutputOption("-metadata:s:v", "title=Album cover")
+              .addOutputOption("-metadata:s:v", "comment=Cover (front)")
+              .addOutputOption("-disposition:v", "attached_pic")
+              .addOutputOption("-metadata", `title=${videoTitle}`)
+              .addOutputOption("-metadata", `artist=${author}`)
+              .addOutputOption("-metadata", `album=${videoTitle} - ${author}`)
+              .addOutputOption("-metadata", `genre=${genre || "Unknown"}`)
+              .toFormat("mp3")
+              .on("start", () => {
+                console.log("FFmpeg processing started");
+              })
+              .on("end", () => {
+                console.log("FFmpeg processing finished");
+                const readStream = fs.createReadStream(tempOutputPath);
+                readStream.pipe(res);
+                readStream.on("end", () => {
+                  tempFiles.delete({ path: tempImagePath });
+                  tempFiles.delete({ path: tempOutputPath });
+                  fs.unlink(tempImagePath, (err) => {
+                    if (err)
+                      console.error("Error deleting temp image file:", err);
+                  });
+                  fs.unlink(tempOutputPath, (err) => {
+                    if (err)
+                      console.error("Error deleting temp output file:", err);
+                  });
+                });
+              })
+              .on("error", (err) => {
+                console.error("FFmpeg error during processing:", err);
+                tempFiles.delete({ path: tempImagePath });
+                tempFiles.delete({ path: tempOutputPath });
+                fs.unlink(tempImagePath, (err) => {
+                  if (err)
+                    console.error("Error deleting temp image file:", err);
+                });
+                fs.unlink(tempOutputPath, (err) => {
+                  if (err)
+                    console.error("Error deleting temp output file:", err);
+                });
+                if (!res.headersSent) {
+                  res.status(500).json({
+                    valid: false,
+                    message: "FFmpeg error occurred.",
+                  });
+                }
+              })
+              .saveToFile(tempOutputPath);
+          } catch (error) {
+            console.error("Error processing artwork:", error);
+            ffmpeg(audioStream)
+              .audioCodec("libmp3lame")
+              .audioBitrate("320k")
+              .outputFormat("mp3")
+              .addOutputOption("-metadata", `title=${videoTitle}`)
+              .addOutputOption("-metadata", `artist=${author}`)
+              .addOutputOption("-metadata", `album=${videoTitle} - ${author}`)
+              .addOutputOption("-metadata", `genre=${genre || "Unknown"}`)
+              .on("error", (err) => {
+                console.error("FFmpeg error:", err);
+                if (!res.headersSent) {
+                  res.status(500).json({
+                    valid: false,
+                    message: "FFmpeg error occurred.",
+                  });
+                }
+              })
+              .pipe(res, { end: true });
+          }
         } else if (format === "mp4") {
           console.log("Downloading MP4 from YouTube");
 
