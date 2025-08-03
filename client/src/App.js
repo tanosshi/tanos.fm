@@ -522,7 +522,6 @@ function App() {
   const [showRomanizedPopup, setShowRomanizedPopup] = useState(false);
   const [isYesLoading, setIsYesLoading] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [showDonationMenu, setShowDonationMenu] = useState(false);
 
   const hasJapanese = (text) => {
     const japaneseRegex =
@@ -669,165 +668,9 @@ function App() {
             }}
             className="backdrop-blur-xl backdrop-saturate-150 p-4 sm:p-8 rounded-xl border flex flex-col items-center w-full shadow-xl relative overflow-hidden bouncy-appear"
           >
-            {/* Donation menu and animated panels */}
-            <div
-              className={`absolute inset-0 w-full h-full flex flex-col items-center ${
-                showDonationMenu
-                  ? "opacity-100 pointer-events-auto pop-appear"
-                  : "opacity-0 pointer-events-none"
-              }`}
-              style={{
-                transition: "all 0.7s cubic-bezier(0.34, 1.26, 0.34, 1.4)",
-                zIndex: 21,
-                transform: showDonationMenu
-                  ? "translateZ(0) translateX(0) scale(1)"
-                  : "translateZ(0) translateX(100%) scale(0.95)",
-                backfaceVisibility: "hidden",
-                WebkitBackfaceVisibility: "hidden",
-                WebkitTransform: showDonationMenu
-                  ? "translateZ(0) translateX(0) scale(1)"
-                  : "translateZ(0) translateX(100%) scale(0.95)",
-                WebkitPerspective: 1000,
-                perspective: 1000,
-                transformOrigin: "center",
-                willChange: "transform, opacity",
-              }}
-            >
-              <div className="flex flex-col items-center w-full gap-4 p-4 sm:p-8">
-                <div className="flex items-center justify-between w-full mb-4">
-                  <h2 className="text-lg sm:text-2xl font-semibold text-gray-200">
-                    Support the Project
-                  </h2>
-                  <button
-                    onClick={() => setShowDonationMenu(false)}
-                    className="text-gray-400 hover:text-gray-200 transition-colors cursor-pointer text-lg sm:text-xl"
-                  >
-                    ←
-                  </button>
-                </div>
-
-                <div className="flex flex-col w-full gap-4">
-                  <div className="hidden sm:flex flex-row w-full h-[240px] gap-4">
-                    <button
-                      onClick={() =>
-                        window.open(
-                          "https://www.paypal.com/paypalme/tanospaypal",
-                          "_blank"
-                        )
-                      }
-                      className="w-1/2 h-full backdrop-blur-lg text-gray-200 rounded-lg border transition-all duration-200 flex flex-col items-center justify-center gap-3 hover:bg-[#0070ba]/10 cursor-pointer"
-                      style={{
-                        backgroundColor: `${currentTheme.accent}15`,
-                        borderColor: `${currentTheme.accent}40`,
-                        transform: `scale(${buttonScale})`,
-                      }}
-                      onMouseDown={handleButtonMouseDown}
-                      onMouseUp={handleButtonMouseUp}
-                    >
-                      <span className="text-4xl">💵</span>
-                      <span className="text-2xl">PayPal</span>
-                    </button>
-
-                    <div className="flex flex-col w-1/2 gap-4">
-                      <button
-                        onClick={() => alert("Coming soon!")}
-                        className="h-[116px] backdrop-blur-lg text-gray-200 rounded-lg border transition-all duration-200 flex flex-col items-center justify-center gap-2 hover:bg-[#29b6f6]/10 cursor-pointer"
-                        style={{
-                          backgroundColor: `${currentTheme.accent}15`,
-                          borderColor: `${currentTheme.accent}40`,
-                          transform: `scale(${buttonScale})`,
-                        }}
-                        onMouseDown={handleButtonMouseDown}
-                        onMouseUp={handleButtonMouseUp}
-                      >
-                        <span className="text-2xl">🚀</span>
-                        <span className="text-xl">Crypto</span>
-                      </button>
-
-                      <button
-                        onClick={() =>
-                          window.open("https://ko-fi.com/taanoss", "_blank")
-                        }
-                        className="h-[116px] backdrop-blur-lg text-gray-200 rounded-lg border transition-all duration-200 flex flex-col items-center justify-center gap-2 hover:bg-[#ea4aaa]/10 cursor-pointer"
-                        style={{
-                          backgroundColor: `${currentTheme.accent}15`,
-                          borderColor: `${currentTheme.accent}40`,
-                          transform: `scale(${buttonScale})`,
-                        }}
-                        onMouseDown={handleButtonMouseDown}
-                        onMouseUp={handleButtonMouseUp}
-                      >
-                        <span className="text-xl">☕</span>
-                        <span className="text-lg">Ko-fi (Card n PayPal)</span>
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="flex sm:hidden flex-col w-full gap-2">
-                    <div className="flex gap-2 w-full">
-                      <button
-                        onClick={() => alert("Coming soon!")}
-                        className="w-[80px] h-[80px] backdrop-blur-lg text-gray-200 rounded-lg border transition-all duration-200 flex flex-col items-center justify-center gap-2 hover:bg-[#29b6f6]/10 cursor-pointer"
-                        style={{
-                          backgroundColor: `${currentTheme.accent}15`,
-                          borderColor: `${currentTheme.accent}40`,
-                          transform: `scale(${buttonScale})`,
-                        }}
-                        onMouseDown={handleButtonMouseDown}
-                        onMouseUp={handleButtonMouseUp}
-                      >
-                        <span className="text-lg">🚀</span>
-                        <span className="text-xs">Crypto</span>
-                      </button>
-
-                      <button
-                        onClick={() =>
-                          window.open(
-                            "https://www.paypal.com/paypalme/tanospaypal",
-                            "_blank"
-                          )
-                        }
-                        className="flex-1 h-[80px] backdrop-blur-lg text-gray-200 rounded-lg border transition-all duration-200 flex flex-col items-center justify-center gap-2 hover:bg-[#0070ba]/10 cursor-pointer"
-                        style={{
-                          backgroundColor: `${currentTheme.accent}15`,
-                          borderColor: `${currentTheme.accent}40`,
-                          transform: `scale(${buttonScale})`,
-                        }}
-                        onMouseDown={handleButtonMouseDown}
-                        onMouseUp={handleButtonMouseUp}
-                      >
-                        <span className="text-2xl">💵</span>
-                        <span className="text-sm">PayPal</span>
-                      </button>
-                    </div>
-
-                    <button
-                      onClick={() =>
-                        window.open("https://ko-fi.com/taanoss", "_blank")
-                      }
-                      className="w-full h-[100px] backdrop-blur-lg text-gray-200 rounded-lg border transition-all duration-200 flex flex-col items-center justify-center gap-2 hover:bg-[#ea4aaa]/10 cursor-pointer"
-                      style={{
-                        backgroundColor: `${currentTheme.accent}15`,
-                        borderColor: `${currentTheme.accent}40`,
-                        transform: `scale(${buttonScale})`,
-                      }}
-                      onMouseDown={handleButtonMouseDown}
-                      onMouseUp={handleButtonMouseUp}
-                    >
-                      <span className="text-xl">☕</span>
-                      <span className="text-sm">Ko-fi</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
             {/* Main contents top */}
             <div
-              className={`w-full transition-all duration-500 ${
-                showDonationMenu
-                  ? "-translate-x-[100%] opacity-0 pointer-events-none"
-                  : "translate-x-0 opacity-100 pointer-events-auto"
-              }`}
+              className={`w-full transition-all duration-500 ${"translate-x-0 opacity-100 pointer-events-auto"}`}
               style={{
                 transition: "all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)",
               }}
@@ -2097,7 +1940,7 @@ function App() {
           <div className="flex flex-col items-center gap-2 mt-6 float-appear">
             <button
               onClick={() => {
-                setShowDonationMenu(true);
+                window.open("https://ko-fi.com/taanoss", "_blank");
                 setMediaInfo(null);
                 setShowSupported(false);
               }}
