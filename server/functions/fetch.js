@@ -6,6 +6,8 @@ const getSpotifyInfo = require("../services/info/getSpotifyInfo.js");
 const getSpotifyAccessToken = require("../services/info/getSpotifyAccessToken.js");
 const getSoundCloudInfo = require("../services/info/getSoundCloudInfo.js");
 
+const btch = require("btch-downloader");
+
 const fs = require("fs");
 const path = require("path");
 
@@ -25,6 +27,16 @@ function isValidUrl(url) {
       "music.apple.com",
       "tiktok.com",
       "instagram.com",
+      "pin.it",
+      "pinit.com",
+      "pinterest.com",
+      "pinterest.c",
+      "reddit.com",
+      "reddit.co.uk",
+      "reddit.fr",
+      "reddit.de",
+      "reddit.it",
+      "mediafire.com",
       "twitter.com",
       "x.com",
     ];
@@ -131,6 +143,21 @@ router.post("/", async (req, res) => {
         });
       }
       mediaInfo = await getSoundCloudInfo(url);
+    } else if (url.includes("pin.") || url.includes("pinterest.")) {
+      const pindata = await btch.pinterest(url);
+
+      console.log(pindata);
+
+      mediaInfo = {
+        isPinterest: true,
+        title: pindata.result.description || "Pinterest Pin",
+        url: pindata.result.image || pindata.result.images.orig,
+        image: pindata.result.image || pindata.result.images.orig,
+        author: pindata.result.user.username || "Unknown user",
+        profilePicture:
+          pindata.result.user.avatar_url ||
+          "https://abs.twimg.com/sticky/default_profile_images/default_profile.png",
+      };
     } else if (url.includes("tiktok.com")) {
       logData.mediaType = "tiktok";
       const tiktokData = await ttdl(url);

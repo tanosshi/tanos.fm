@@ -479,7 +479,40 @@ router.get("/", async (req, res) => {
       url = spotifyInfo.url.replace("#from_spotify", "");
     }
 
-    res.redirect(url);
+    try {
+      const response = await axios({
+        method: "get",
+        url,
+        responseType: "stream",
+      });
+      let ext = "";
+      const urlPath = new URL(url).pathname;
+      const extMatch = urlPath.match(/\.(\w{2,5})(?:$|\?)/);
+      if (extMatch) {
+        ext = `.${extMatch[1]}`;
+      } else {
+        const contentType = response.headers["content-type"] || "";
+        if (contentType.includes("video")) ext = ".gif";
+        else if (contentType.includes("image")) ext = ".png";
+        else ext = "";
+      }
+
+      const contentType =
+        response.headers["content-type"] || "application/octet-stream";
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="download${ext}"`
+      );
+      res.setHeader("Content-Type", contentType);
+      response.data.pipe(res);
+    } catch (error) {
+      console.error("Error downloading media:", error);
+      return res.status(500).json({
+        valid: false,
+        message: "Failed to download media " + error,
+      });
+    }
+    return;
     res.status(404).json({
       valid: false,
       message: "Couldnt identify the URL, sending you to the URL.",

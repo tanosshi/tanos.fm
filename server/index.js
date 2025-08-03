@@ -6,6 +6,7 @@
 require("dotenv").config({ path: __dirname + "/.env" });
 
 const express = require("express");
+
 const cors = require("cors");
 
 const fs = require("fs");
@@ -65,13 +66,16 @@ const getAlbumCoverFromSoundCloud = require("./services/albums/getAlbumCoverFrom
 const getAlbumCoverFromLastFM = require("./services/albums/getAlbumCoverFromLastFM.js");
 const { searchQQMusic, searchNetease } = require("./services/lyrics/search.js");
 const getNeteaseCloudMusicLyrics = require("./services/lyrics/getNeteaseCloudMusicLyrics.js");
+const ipBlocker = require("./services/ipBlocker.js");
 
 // -- Unnecessary but might be fixing something
 const SOUNDCLOUD_CLIENT_ID = process.env.SOUNDCLOUD_CLIENT_ID;
 
 // -- Loading the site
 const app = express();
+app.set("trust proxy", true);
 app.use(cors());
+app.use(ipBlocker);
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "..", "client", "build")));
 
@@ -85,6 +89,10 @@ app.use("/download", downloadRoutes);
 app.use("/stream", streamRoutes);
 
 // -- Load the built static page
+app.get("/checkIP", ipBlocker, (req, res) => {
+  res.status(200).send("access allowed");
+});
+
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "..", "client", "build", "index.html"));
 });

@@ -86,7 +86,6 @@ npm start
 
 | Feature                      | Status             | Priority | ETA |
 | ---------------------------- | ------------------ | -------- | --- |
-| 🔧 FFmpeg Optimization       | ✅ **Complete**    | High     | ✅  |
 | 🎧 Spotify Integration       | ✅ **Complete**    | High     | ✅  |
 | 📺 YouTube Integration       | ✅ **Complete**    | High     | ✅  |
 | 🎶 YouTube Music Integration | ✅ **Complete**    | High     | ✅  |
@@ -94,13 +93,18 @@ npm start
 | 🐦 Twitter Integration       | ✅ **Complete**    | High     | ✅  |
 | 📷 Instagram Integration     | ✅ **Complete**    | High     | ✅  |
 | ☁️ SoundCloud Integration    | ✅ **Complete**    | High     | ✅  |
+| 📌 Pinterest Integration     | ✅ **Complete**    | Medium   | ✅  |
+| 🔧 FFmpeg Optimization       | ✅ **Complete**    | High     | ✅  |
+| 📹 HD Video Downloads        | ✅ **Complete**    | Medium   | ✅  |
 | 🧹 Code Cleanup & UI Polish  | ✅ **Complete**    | High     | ✅  |
 | 💻 Modern Frontend           | ✅ **Complete**    | High     | ✅  |
-| 📥 Download System           | ✅ **Complete**    | High     | ✅  |
 | 🎨 Enhanced UI Details       | ✅ **Complete**    | Medium   | ✅  |
-| 📹 HD Video Downloads        | ✅ **Complete**    | Medium   | ✅  |
-| 📌 Pinterest Integration     | ⏳ **In Progress** | Medium   | ⏳  |
+| 📥 Download System           | ✅ **Complete**    | High     | ✅  |
+| 🚦 Rate limiting system      | ✅ **Complete**    | High     | ✅  |
+| 🔌 IP Address Blocker        | ✅ **Complete**    | High     | ✅  |
 | 🤖 Reddit Integration        | ⏳ **In Progress** | Low      | ⏳  |
+| 🔥 Mediafire Integration     | ⏳ **In Progress** | Low      | ⏳  |
+| 📁 Google Drive Integration  | ⏳ **In Progress** | Low      | ⏳  |
 | 🎤 Lyrics Fix                | 🔄 **Planned**     | Low      | TBD |
 | 🌐 Even more platforms       | 🔄 **Planned**     | Lowest   | TBD |
 | 🔑 API Keys for projects     | 💤 **Planned**     | Lowest   | TBD |

@@ -3,6 +3,11 @@
 const axios = require("axios");
 
 async function getAlbumCoverFromLastFM(artist, track, apiKey) {
+  if (apiKey === undefined || apiKey === null) {
+    console.error("API key is required for LastFM requests.");
+    return { imageBuffer: null, genre: "Unknown" };
+  }
+
   const url = `http://ws.audioscrobbler.com/2.0/?method=track.getInfo&api_key=${apiKey}&artist=${encodeURIComponent(
     artist
   )}&track=${encodeURIComponent(track)}&format=json`;

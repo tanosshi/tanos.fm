@@ -112,6 +112,10 @@ function App() {
   const [isFadingOut, setIsFadingOut] = useState(false);
   const [selectedPlatform, setSelectedPlatform] = useState(null);
   const [result, setResult] = useState("");
+
+  const [blocked, setBlocked] = useState(false);
+  const [checked, setChecked] = useState(false);
+
   const [notification, setNotification] = useState({
     show: false,
     message: "",
@@ -165,13 +169,13 @@ function App() {
     }, 100);
   };
 
-  const handlePaste = (e) => {
-    // i lowk forgot
-  };
-
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
       e.preventDefault();
+
+      if (document.getElementById("tracker-text").value.startsWith("xss"))
+        return;
+
       fetchData();
       setButtonScale(0.97);
       setTimeout(() => {
@@ -183,6 +187,11 @@ function App() {
         e.target.style.animation = "";
       }, 1000);
     }
+
+    if (document.getElementById("tracker-text").value.includes("&start_radio="))
+      document.getElementById("tracker-text").value = document
+        .getElementById("tracker-text")
+        .value.split("&start_radio=")[0];
   };
 
   useEffect(() => {
@@ -406,7 +415,9 @@ function App() {
       lowerResults === "help" ||
       lowerResults === "commands" ||
       lowerResults === "cmds" ||
-      lowerResults === "services"
+      lowerResults === "services" ||
+      lowerResults === "platforms" ||
+      lowerResults === "supported"
     ) {
       return setShowSupported(true);
     }
@@ -548,6 +559,25 @@ function App() {
       setShowDownloadPanel(false);
     }
   }, [mediaInfo]);
+
+  useEffect(() => {
+    fetch("/checkAPI")
+      .then((res) => {
+        if (res.status === 403) setBlocked(true);
+        setChecked(true);
+      })
+      .catch(() => {
+        setBlocked(true);
+        setChecked(true);
+      });
+  }, []);
+
+  if (blocked) {
+    return (
+      <div style={{ padding: 40, textAlign: "center" }}>🚫 Access Blocked</div>
+    );
+  }
+  if (!checked) return <div>checking access...</div>;
 
   // ================================ Begin ================================ //
   return (
@@ -978,9 +1008,9 @@ function App() {
                             fontSize: "0.7rem",
                           }}
                         >
-                          Tiktok, Twitter & Instagram
+                          Tiktok, Twitter, Pinterest & Instagram
                         </p>
-                        <p className="text-xs text-gray-400">Short Videos</p>
+                        <p className="text-xs text-gray-400">Entertainment</p>
                       </div>
                     </div>
                   </div>
@@ -1024,7 +1054,7 @@ function App() {
                         {selectedPlatform === "lyrics" &&
                           "Lyrics are grabbed using LrcLib, QQ Music, and NetEase."}
                         {selectedPlatform === "social" &&
-                          "We use ruhend-scraper for downloading videos."}
+                          "We use ruhend-scraper and btch-downloader for downloading media."}
                       </p>
                     </div>
                     <div
@@ -1432,7 +1462,6 @@ function App() {
                         value={result}
                         onChange={handleInputChange}
                         onKeyDown={handleKeyDown}
-                        onPaste={handlePaste}
                         style={{
                           fontSize: getDynamicFontSize(result),
                           transition:
@@ -1516,7 +1545,59 @@ function App() {
                       </h3>
                     </div>
                     <div className="space-y-4">
-                      {mediaInfo.isTwitter ? (
+                      {mediaInfo.isPinterest ? (
+                        <>
+                          <div className="flex items-center gap-3 bg-[#161616]/70 backdrop-blur-md p-3 rounded-lg border border-[#333333]/50">
+                            <img
+                              src={mediaInfo.profilePicture}
+                              alt="Profile"
+                              className="w-12 h-12 rounded-full border border-[#c8232c]"
+                              style={{
+                                backgroundColor: "#fff",
+                              }}
+                            />
+                            <div>
+                              <p className="text-gray-200 font-semibold flex items-center gap-2">
+                                <span
+                                  style={{
+                                    color: "#c8232c",
+                                    fontSize: "1.2em",
+                                  }}
+                                >
+                                  📌
+                                </span>
+                                {mediaInfo.author || "Unknown user"}
+                              </p>
+                              <p className="text-gray-400 text-sm">Pinterest</p>
+                            </div>
+                          </div>
+                          <div className="bg-[#161616]/70 backdrop-blur-md p-3 rounded-lg border border-[#333333]/50 flex flex-col items-center">
+                            <img
+                              src={mediaInfo.image}
+                              alt={mediaInfo.title}
+                              className="rounded-lg max-h-[300px] mb-2 border border-[#c8232c]/60"
+                              style={{
+                                objectFit: "contain",
+                                background: "#fff",
+                                width: "200px",
+                              }}
+                            />
+                            <p className="text-gray-200 text-center mb-1 font-semibold">
+                              {mediaInfo.title}
+                            </p>
+                            <button
+                              className="mt-2 px-6 py-2 rounded-lg border transition-all duration-200 flex items-center justify-center gap-2 text-white bg-[#c8232c] hover:bg-[#b21d24] border-[#c8232c] shadow-md"
+                              style={{ fontWeight: 600, cursor: "pointer" }}
+                              onClick={() =>
+                                window.open(mediaInfo.url, "_blank")
+                              }
+                            >
+                              <span style={{ fontSize: "1.2em" }}>📥</span>{" "}
+                              Download Pin
+                            </button>
+                          </div>
+                        </>
+                      ) : mediaInfo.isTwitter ? (
                         <>
                           <div className="flex items-center gap-3 bg-[#161616]/70 backdrop-blur-md p-3 rounded-lg border border-[#333333]/50">
                             <img
@@ -1528,7 +1609,10 @@ function App() {
                               className="w-12 h-12 rounded-full border border-[#444444]"
                             />
                             <div>
-                              <p className="text-gray-200 font-semibold">
+                              <p
+                                className="text-gray-200 font-semibold"
+                                style={{ fontSize: "1em" }}
+                              >
                                 {mediaInfo.author || "Twitter User"}
                               </p>
                               <p className="text-gray-400 text-sm">
@@ -1703,6 +1787,7 @@ function App() {
                           {!mediaInfo.isFromSpotify &&
                             !mediaInfo.isFromSoundCloud &&
                             !mediaInfo.isTwitter &&
+                            !mediaInfo.isPinterest &&
                             (mediaInfo.isTikTok ||
                               !mediaInfo.isFromSpotify) && (
                               <button
@@ -1779,6 +1864,7 @@ function App() {
                             )}
                           {!mediaInfo.isTikTok &&
                             !mediaInfo.isEMedia &&
+                            !mediaInfo.isPinterest &&
                             !mediaInfo.isTwitter && (
                               <button
                                 className={`flex-1 px-4 py-2 backdrop-blur-lg text-gray-200 rounded-lg border transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer ${
@@ -1840,6 +1926,7 @@ function App() {
                           mediaInfo.isFromSoundCloud) &&
                           !mediaInfo.isTikTok &&
                           !mediaInfo.isEMedia &&
+                          !mediaInfo.isPinterest &&
                           !mediaInfo.isTwitter && (
                             <>
                               <button
@@ -1987,7 +2074,7 @@ function App() {
       </div>
       {/* Versioning */}
       <div className="absolute bottom-5 right-7 text-gray-200 text-sm z-11 opacity-7 hidden sm:block">
-        v1.0.a4
+        v1.1.9
       </div>
     </div>
   );

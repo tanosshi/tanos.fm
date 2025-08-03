@@ -5,6 +5,14 @@ const axios = require("axios");
 const SOUNDCLOUD_CLIENT_ID = process.env.SOUNDCLOUD_CLIENT_ID;
 
 async function getAlbumCoverFromSoundCloud(artist, track) {
+  if (
+    !SOUNDCLOUD_CLIENT_ID ||
+    SOUNDCLOUD_CLIENT_ID === "" ||
+    SOUNDCLOUD_CLIENT_ID === null
+  ) {
+    console.error("SOUNDCLOUD_CLIENT_ID is required for SoundCloud requests.");
+    return null;
+  }
   const searchUrl = `https://api.soundcloud.com/search/tracks?q=${encodeURIComponent(
     `${artist} ${track}`
   )}&client_id=${SOUNDCLOUD_CLIENT_ID}`;
