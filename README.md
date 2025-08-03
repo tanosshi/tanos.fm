@@ -102,12 +102,11 @@ npm start
 | 📥 Download System           | ✅ **Complete**    | High     | ✅  |
 | 🚦 Rate limiting system      | ✅ **Complete**    | High     | ✅  |
 | 🔌 IP Address Blocker        | ✅ **Complete**    | High     | ✅  |
-| 🤖 Reddit Integration        | ⏳ **In Progress** | Low      | ⏳  |
-| 🔥 Mediafire Integration     | ⏳ **In Progress** | Low      | ⏳  |
-| 📁 Google Drive Integration  | ⏳ **In Progress** | Low      | ⏳  |
+| 📁 Google Drive File Info    | ⏳ **In Progress** | Low      | ⏳  |
 | 🎤 Lyrics Fix                | 🔄 **Planned**     | Low      | TBD |
-| 🌐 Even more platforms       | 🔄 **Planned**     | Lowest   | TBD |
+| 🎛️ A left panel with info    | 🔄 **Planned**     | Low      | TBD |
 | 🔑 API Keys for projects     | 💤 **Planned**     | Lowest   | TBD |
+| 🤖 Reddit Integration        | 💤 **One day**     | Lowest   | TBD |
 
 </div>
 
@@ -203,6 +202,6 @@ If you found the project somewhat interesting, dont be shy to:
 
 ---
 
-_Always made with ❤️ by the tanos_
+_Always made with ❤️ by THE tanos_
 
 </div>

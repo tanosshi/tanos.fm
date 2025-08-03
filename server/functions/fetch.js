@@ -31,12 +31,6 @@ function isValidUrl(url) {
       "pinit.com",
       "pinterest.com",
       "pinterest.c",
-      "reddit.com",
-      "reddit.co.uk",
-      "reddit.fr",
-      "reddit.de",
-      "reddit.it",
-      "mediafire.com",
       "twitter.com",
       "x.com",
     ];

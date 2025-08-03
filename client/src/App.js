@@ -1319,13 +1319,7 @@ function App() {
                                 )}&romanized=true`;
                                 console.log("Fetching lyrics from:", lyricsUrl);
 
-                                const response = await fetch(lyricsUrl, {
-                                  method: "GET",
-                                  headers: {
-                                    "Content-Type": "application/json",
-                                    Accept: "application/json",
-                                  },
-                                });
+                                const response = await fetch(lyricsUrl);
                                 if (!response.ok) {
                                   setNotification({
                                     show: true,
@@ -1406,13 +1400,7 @@ function App() {
                                 )}`;
                                 console.log("Fetching lyrics from:", lyricsUrl);
 
-                                const response = await fetch(lyricsUrl, {
-                                  method: "GET",
-                                  headers: {
-                                    "Content-Type": "application/json",
-                                    Accept: "application/json",
-                                  },
-                                });
+                                const response = await fetch(lyricsUrl);
 
                                 console.log(
                                   "Lyrics response status:",
@@ -1955,17 +1943,8 @@ function App() {
                                           lyricsUrl
                                         );
 
-                                        const response = await fetch(
-                                          lyricsUrl,
-                                          {
-                                            method: "GET",
-                                            headers: {
-                                              "Content-Type":
-                                                "application/json",
-                                              Accept: "application/json",
-                                            },
-                                          }
-                                        );
+                                        const response = await fetch(lyricsUrl);
+
                                         if (!response.ok) {
                                           setNotification({
                                             show: true,
@@ -1975,6 +1954,7 @@ function App() {
                                           });
                                           return;
                                         }
+
                                         const blob = await response.blob();
                                         const url =
                                           window.URL.createObjectURL(blob);
@@ -1985,7 +1965,18 @@ function App() {
                                         a.click();
                                         window.URL.revokeObjectURL(url);
                                         document.body.removeChild(a);
+
+                                        setNotification({
+                                          show: true,
+                                          message:
+                                            "Lyrics downloaded successfully! 🎵",
+                                          isValid: true,
+                                        });
                                       } catch (error) {
+                                        console.error(
+                                          "Error fetching lyrics:",
+                                          error
+                                        );
                                         setNotification({
                                           show: true,
                                           message: "Failed to download lyrics",
