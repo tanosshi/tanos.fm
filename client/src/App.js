@@ -1194,7 +1194,7 @@ function App() {
                             We may collect your IP address for limited purposes
                             to prevent abuse.
                           </p>
-                          <p>We may use cookies to improve your experience.</p>
+                          <p>We will not cover any data breaches or leaks.</p>
                           <p>
                             This site is not intended for children under 13.
                           </p>
@@ -1599,7 +1599,7 @@ function App() {
                             <div>
                               <p
                                 className="text-gray-200 font-semibold"
-                                style={{ fontSize: "1em" }}
+                                style={{ fontSize: "0.7em" }}
                               >
                                 {mediaInfo.author || "Twitter User"}
                               </p>
@@ -1674,6 +1674,73 @@ function App() {
                                   </p>
                                   <p className="text-gray-200 text-sm">
                                     MP4 🎥
+                                  </p>
+                                </>
+                              )}
+                            </button>
+                          </div>
+                        </>
+                      ) : mediaInfo.isSmallData ? (
+                        <>
+                          <div className="flex items-center gap-3 bg-[#161616]/70 backdrop-blur-md p-3 rounded-lg border border-[#333333]/50">
+                            <div>
+                              <p
+                                className="text-gray-200 font-semibold"
+                                style={{ fontSize: "1em" }}
+                              >
+                                {mediaInfo.title}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="bg-[#161616]/70 backdrop-blur-md p-3 rounded-lg border border-[#333333]/50">
+                            <p className="text-gray-400 text-sm">File size</p>
+                            <p className="text-gray-200">{mediaInfo.size}</p>
+                          </div>
+                          <div className="grid grid-cols-4 gap-3">
+                            <button
+                              className="bg-[#161616]/70 backdrop-blur-md p-3 rounded-lg border border-[#333333]/50 hover:bg-[#161616] transition-all duration-200 flex flex-col items-center cursor-pointer justify-center"
+                              onClick={() =>
+                                window.open(mediaInfo.url, "_blank")
+                              }
+                              disabled={downloading.mp4}
+                              style={{
+                                width: "430%",
+                                backgroundColor: `${currentTheme.accent}33`,
+                                borderColor: `${currentTheme.accent}66`,
+                                "&:hover": {
+                                  backgroundColor: `${currentTheme.accent}44`,
+                                  borderColor: `${currentTheme.accent}88`,
+                                },
+                              }}
+                            >
+                              {downloading.mp4 ? (
+                                <svg
+                                  className="animate-spin h-5 w-5 text-white"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <circle
+                                    className="opacity-25"
+                                    cx="12"
+                                    cy="12"
+                                    r="10"
+                                    stroke="currentColor"
+                                    strokeWidth="4"
+                                  ></circle>
+                                  <path
+                                    className="opacity-75"
+                                    fill="currentColor"
+                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                  ></path>
+                                </svg>
+                              ) : (
+                                <>
+                                  <p className="text-gray-400 text-sm">
+                                    Indirect Download
+                                  </p>
+                                  <p className="text-gray-200 text-sm">
+                                    .{mediaInfo.title.split(".").pop()} File
                                   </p>
                                 </>
                               )}
@@ -1775,6 +1842,7 @@ function App() {
                           {!mediaInfo.isFromSpotify &&
                             !mediaInfo.isFromSoundCloud &&
                             !mediaInfo.isTwitter &&
+                            !mediaInfo.isSmallData &&
                             !mediaInfo.isPinterest &&
                             (mediaInfo.isTikTok ||
                               !mediaInfo.isFromSpotify) && (
@@ -1852,6 +1920,7 @@ function App() {
                             )}
                           {!mediaInfo.isTikTok &&
                             !mediaInfo.isEMedia &&
+                            !mediaInfo.isSmallData &&
                             !mediaInfo.isPinterest &&
                             !mediaInfo.isTwitter && (
                               <button
@@ -1914,6 +1983,7 @@ function App() {
                           mediaInfo.isFromSoundCloud) &&
                           !mediaInfo.isTikTok &&
                           !mediaInfo.isEMedia &&
+                          !mediaInfo.isSmallData &&
                           !mediaInfo.isPinterest &&
                           !mediaInfo.isTwitter && (
                             <>

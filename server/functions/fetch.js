@@ -31,6 +31,8 @@ function isValidUrl(url) {
       "pinit.com",
       "pinterest.com",
       "pinterest.c",
+      "drive.google.com",
+      "drive.google",
       "twitter.com",
       "x.com",
     ];
@@ -152,6 +154,30 @@ router.post("/", async (req, res) => {
           pindata.result.user.avatar_url ||
           "https://abs.twimg.com/sticky/default_profile_images/default_profile.png",
       };
+    } else if (
+      url.includes("drive.google.com") ||
+      url.includes("drive.google")
+    ) {
+      const googledrive = await btch.gdrive(url);
+
+      console.log(googledrive);
+
+      if (
+        !googledrive.result.downloadUrl ||
+        googledrive.result.downloadUrl === ""
+      ) {
+        return res.status(400).json({
+          valid: false,
+          message: "Google Drive file not found or inaccessible",
+        });
+      }
+
+      mediaInfo = {
+        isSmallData: true,
+        title: googledrive.result.filename || "Google Drive File",
+        size: googledrive.result.filesize || "Unknown size",
+        url: googledrive.result.downloadUrl,
+      };
     } else if (url.includes("tiktok.com")) {
       logData.mediaType = "tiktok";
       const tiktokData = await ttdl(url);
@@ -186,7 +212,7 @@ router.post("/", async (req, res) => {
     } else if (url.includes("twitter.com") || url.includes("x.com")) {
       logData.mediaType = "twitter";
       try {
-        const result = await TwitterDL(url);
+        const result = await TwitterDL(url.replace("fxtwitter.com", "x.com"));
         console.log("Twitter result:", result);
         mediaInfo = {
           title: result.result.description || "Twitter Media",

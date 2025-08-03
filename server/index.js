@@ -168,6 +168,8 @@ function isValidUrl(url) {
       "twitter.com",
       "x.com",
       "twitterfx.com",
+      "drive.google.com",
+      "drive.google",
       "fxtwitter.com",
     ];
     const hostname = new URL(url).hostname;

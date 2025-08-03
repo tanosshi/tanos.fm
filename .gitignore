@@ -13,7 +13,6 @@ client/src/ol.app.js
 .env
 *env*
 /tmp
-server/functions/history.json
+*\history.json
 *temp_*.*
-server/functions/history.json
 ip-list.txt
