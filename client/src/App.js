@@ -6,8 +6,9 @@
 
 import React, { useState, useEffect, useRef } from "react";
 
+console.clear();
 console.log(
-  `\x1b[94m%s\x1b[0m`,
+  `\x1b[94m%s\x1b[0m\n`,
   `⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠿⠿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
 ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠋⣉⣤⣴⣶⣯⣄⠈⠵⣶⣿⣿⣐⠫⣛⠿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
 ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⣾⣿⣿⣿⣿⣿⣿⣷⣦⡛⠉⠴⠿⠿⣾⣿⣦⣝⠻⣿⣿⣿⣿⣿⣿⣿⣿
@@ -387,8 +388,7 @@ function App() {
     "enter your link here !",
     "enter any url here :3",
     "place your url in here ;)",
-    "what would you want to download?",
-    "what would you want to download?",
+    "enter your url",
   ];
   const [randomPlaceholderText] = React.useState(
     () => placeholders[Math.floor(Math.random() * placeholders.length)]
@@ -1937,7 +1937,10 @@ function App() {
             </div>
           </div>
           {/* Text below the main panel */}
-          <div className="flex flex-col items-center gap-2 mt-6 float-appear">
+          <div
+            id="extras"
+            className="flex flex-col items-center gap-2 mt-6 float-appear"
+          >
             <button
               onClick={() => {
                 window.open("https://ko-fi.com/taanoss", "_blank");

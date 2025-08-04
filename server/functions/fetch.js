@@ -35,6 +35,7 @@ function isValidUrl(url) {
       "drive.google",
       "twitter.com",
       "x.com",
+      "fxtwitter.com",
     ];
     const hostname = new URL(url).hostname;
     return supportedDomains.some((domain) => hostname.includes(domain));
@@ -74,8 +75,8 @@ function logToHistory(requestData) {
   }
 }
 
-router.post("/", async (req, res) => {
-  const { url } = req.body;
+async function processFetch(req, res) {
+  const { url, apiKey } = req.body;
   switch (true) {
     case url.includes("nsfw_content"):
       return res.status(400).json({
@@ -238,16 +239,22 @@ router.post("/", async (req, res) => {
     }
 
     logData.success = true;
-
     logToHistory(logData);
 
-    return res.status(200).json({
-      valid: true,
-      message: "Valid URL detected!",
-      mediaInfo,
-      isFromSpotify,
-      isFromSoundCloud,
-    });
+    if (apiKey?.length > 2) {
+      return {
+        valid: true,
+        mediaInfo,
+      };
+    } else {
+      return res.status(200).json({
+        valid: true,
+        message: "Valid URL detected!",
+        mediaInfo,
+        isFromSpotify,
+        isFromSoundCloud,
+      });
+    }
   } catch (error) {
     logToHistory({
       url: req.body.url,
@@ -263,6 +270,19 @@ router.post("/", async (req, res) => {
       message: error.message || "Error processing URL. Please try again.",
     });
   }
+
+  return res.status(500).json({
+    valid: false,
+    message: "somethihng in the code went wrong if youre seeing this",
+  });
+}
+
+router.post("/", async (req, res) => {
+  processFetch(req, res);
 });
 
-module.exports = router;
+module.exports = {
+  router,
+  isValidUrl,
+  processFetch,
+};

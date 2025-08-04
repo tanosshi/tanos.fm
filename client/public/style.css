@@ -50,7 +50,21 @@ html {
     top: 2px;
   }
 }
-
+@media only screen and (max-width: 380px) {
+  #tracker-text {
+    font-size: 0.8rem;
+  }
+}
+@media only screen and (max-width: 350px) {
+  #extras {
+    zoom: 0.8;
+  }
+}
+@media only screen and (max-width: 280px) {
+  #extras {
+    zoom: 0.8;
+  }
+}
 @media only screen and (max-width: 300px) {
   .home-social {
     zoom: 0.8;

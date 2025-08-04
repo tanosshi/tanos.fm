@@ -84,30 +84,31 @@ npm start
 
 <div align="center">
 
-| Feature                           | Status             | Priority | ETA  |
-| --------------------------------- | ------------------ | -------- | ---- |
-| 🎧 Spotify Integration            | ✅ **Complete**    | High     | ✅   |
-| 📺 YouTube Integration            | ✅ **Complete**    | High     | ✅   |
-| 🎶 YouTube Music Integration      | ✅ **Complete**    | High     | ✅   |
-| 🎭 TikTok Integration             | ✅ **Complete**    | High     | ✅   |
-| 🐦 Twitter Integration            | ✅ **Complete**    | High     | ✅   |
-| 📷 Instagram Integration          | ✅ **Complete**    | High     | ✅   |
-| ☁️ SoundCloud Integration         | ✅ **Complete**    | High     | ✅   |
-| 📌 Pinterest Integration          | ✅ **Complete**    | Medium   | ✅   |
-| 📁 Indirect Google Drive Download | ✅ **Complete**    | Low      | ✅   |
-| 🔧 FFmpeg Optimization            | ✅ **Complete**    | High     | ✅   |
-| 📹 Full Quality Video Downloads   | ✅ **Complete**    | Medium   | ✅   |
-| 🧹 Code Cleanup & UI Polish       | ✅ **Complete**    | High     | ✅   |
-| 💻 Modern Frontend                | ✅ **Complete**    | High     | ✅   |
-| 🎨 Enhanced UI Details            | ✅ **Complete**    | Medium   | ✅   |
-| 📥 Download System                | ✅ **Complete**    | High     | ✅   |
-| 🚦 Rate limiting system           | ✅ **Complete**    | High     | ✅   |
-| 🔌 IP Address Blocker             | ✅ **Complete**    | High     | ✅   |
-| 🔑 API Keys for projects          | ⏳ **In Progress** | Highest  | week |
-| 🔍 Search for music               | 🔄 **Planned**     | Medium   | TBD  |
-| 🎛️ A left panel with info         | 🔄 **Planned**     | Low      | TBD  |
-| 🎤 Lyrics Fix                     | 🔄 **Planned**     | Lowest   | TBD  |
-| 🤖 Reddit Integration             | 💤 **One day**     | Lowest   | TBD  |
+| Feature                                | Status             | Priority | ETA |
+| -------------------------------------- | ------------------ | -------- | --- |
+| 🎧 Spotify Integration                 | ✅ **Complete**    | High     | ✅  |
+| 📺 YouTube Integration                 | ✅ **Complete**    | High     | ✅  |
+| 🎶 YouTube Music Integration           | ✅ **Complete**    | High     | ✅  |
+| 🎭 TikTok Integration                  | ✅ **Complete**    | High     | ✅  |
+| 🐦 Twitter Integration                 | ✅ **Complete**    | High     | ✅  |
+| 📷 Instagram Integration               | ✅ **Complete**    | High     | ✅  |
+| ☁️ SoundCloud Integration              | ✅ **Complete**    | High     | ✅  |
+| 📌 Pinterest Integration               | ✅ **Complete**    | Medium   | ✅  |
+| 📁 Indirect Google Drive Download      | ✅ **Complete**    | Low      | ✅  |
+| 🔧 FFmpeg Optimization                 | ✅ **Complete**    | High     | ✅  |
+| 📹 Full Quality Video Downloads        | ✅ **Complete**    | Medium   | ✅  |
+| 🧹 Code Cleanup & UI Polish            | ✅ **Complete**    | High     | ✅  |
+| 💻 Modern Frontend                     | ✅ **Complete**    | High     | ✅  |
+| 🎨 Enhanced UI Details                 | ✅ **Complete**    | Medium   | ✅  |
+| 🎤 Lyrics Fix                          | ✅ **Complete**    | Lowest   | ✅  |
+| 📥 Download System                     | ✅ **Complete**    | High     | ✅  |
+| 🚦 Rate limiting system                | ✅ **Complete**    | High     | ✅  |
+| 🔌 IP Address Blocker                  | ✅ **Complete**    | High     | ✅  |
+| 🔑 API Keys for projects               | 🟡 **Almost done** | Highest  | ⏳  |
+| 🔍 Search for music                    | ⏳ **In Progress** | Medium   | TBD |
+| 🎛️ A left panel with info              | 🔄 **Planned**     | Low      | TBD |
+| 📼 Add other extension supports (webm) | 🔄 **Planned**     | Low      | TBD |
+| 🤖 Reddit Integration                  | 💤 **One day**     | Lowest   | TBD |
 
 </div>
 
@@ -150,15 +151,14 @@ npm start
 
 ### 🔧 Core Dependencies
 
-This may be a little bit outdated, but still accurate.
-
-| Package                   | Purpose                     |
-| ------------------------- | --------------------------- |
-| **ruhend-scraper**        | 🕷️ Advanced web scraping    |
-| **ytdl-core**             | 📺 YouTube processing       |
-| **twitter-downloader**    | 🐦 Twitter media extraction |
-| **soundcloud-downloader** | 🎵 SoundCloud integration   |
-| **fluent-ffmpeg**         | 🎬 Media conversion engine  |
+| Package                   | Purpose                         |
+| ------------------------- | ------------------------------- |
+| **ruhend-scraper**        | 🕷️ Media scraper + Link fetcher |
+| **btch**                  | 🕷️ Media scraper + Link fetcher |
+| **@distube/ytdl-core**    | 📺 YouTube processing           |
+| **twitter-downloader**    | 🐦 Twitter media extraction     |
+| **soundcloud-downloader** | 🎵 SoundCloud integration       |
+| **fluent-ffmpeg**         | 🎬 Media conversion engine      |
 
 ---
 

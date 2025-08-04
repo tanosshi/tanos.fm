@@ -1,6 +1,6 @@
 /** @file download.js
  * @description Handles downloading media files from various sources.
- * TODO: Fix low quality YouTube downloads.
+ * TODO: Add option to download anything other than mp4 or mp3, e.g. FLAC, webm or similar.
  */
 
 const express = require("express");

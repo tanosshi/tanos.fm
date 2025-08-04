@@ -84,11 +84,13 @@ const fetchRoutes = require("./functions/fetch");
 const downloadRoutes = require("./functions/download");
 const streamRoutes = require("./functions/stream");
 const lyricRoutes = require("./functions/lyrics");
+const apiRoutes = require("./api/index");
 
-app.use("/fetch", fetchRoutes);
+app.use("/fetch", fetchRoutes.router);
 app.use("/download", downloadRoutes);
 app.use("/stream", streamRoutes);
-app.get("/lyrics", lyricRoutes);
+app.use("/lyrics", lyricRoutes);
+app.use("/api", apiRoutes);
 
 // -- Load the built static page
 app.get("/checkIP", ipBlocker, (req, res) => {
@@ -146,38 +148,6 @@ const cleanupTempFiles = () => {
 
 setInterval(cleanupTempFiles, 5 * 60 * 1000); // Toggle
 cleanupTempFiles(); // Toggle
-
-// -- Used by a couple codes, append any new domains here
-function isValidUrl(url) {
-  try {
-    new URL(url);
-    const supportedDomains = [
-      "youtube.com",
-      "youtu.be",
-      "music.youtube.com",
-      "soundcloud.com",
-      "spotify.com",
-      "spoti.fy",
-      "music.apple.com",
-      "tiktok.com",
-      "vm.tiktok.com",
-      "cn.tiktok.com",
-      "cn.tiktok.com",
-      "instagram.com",
-      "instagr.am",
-      "twitter.com",
-      "x.com",
-      "twitterfx.com",
-      "drive.google.com",
-      "drive.google",
-      "fxtwitter.com",
-    ];
-    const hostname = new URL(url).hostname;
-    return supportedDomains.some((domain) => hostname.includes(domain));
-  } catch (err) {
-    return false;
-  }
-}
 
 // -- Create a log, it's stated in the ToS that it'll be logged anyway
 function logToHistory(requestData) {
