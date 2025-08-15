@@ -519,7 +519,7 @@ export const DownloadPanel = ({
         paddingRight: "32px",
         paddingLeft: "32px",
         paddingBottom: "12px",
-        paddingTop: "24px",
+        paddingTop: "32px",
         borderRadius: "13px",
       }}
     >
