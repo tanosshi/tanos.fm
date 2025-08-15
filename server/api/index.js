@@ -4,6 +4,7 @@
  * TODO: add api key tracking to see whats happening
  * TODO: add api key rate limiting
  * TODO: better error handling
+ * TODO: docs page w/samples
  */
 
 /** API key usage
@@ -47,6 +48,13 @@ router.get("/", async (req, res) => {
     });
   }
 
+  if (format == "mp3") {
+    return res.status(400).json({
+      valid: false,
+      message: "MP3 downloads are not supported at the moment.",
+    });
+  }
+
   if (!isValidUrl(url)) {
     return res.status(400).json({
       valid: false,
@@ -60,8 +68,6 @@ router.get("/", async (req, res) => {
       message: "This API key is not valid.",
     });
   }
-
-  // send request to /fetch
 
   const sim_req = {
     body: {
@@ -84,15 +90,14 @@ router.get("/", async (req, res) => {
   const response = await processFetch(sim_req, sim_res);
   console.log(response);
 
-  // Send
   return res.status(200).json({
     valid: true,
-    note: "Downloads are extremely bugged at the moment, this is just a quick sample/demo, only YouTube works as far as i kknow",
     message: response.mediaInfo.title || null,
     download_url: response.mediaInfo.downloadUrl || null,
     backup_download_url: response.mediaInfo.format?.url || null,
     size: response.mediaInfo.size || null,
     lyrics: response.mediaInfo.download_lrc_file || null,
+    note: "Most sources should work, except for the ones requiring conversion",
   });
 });
 

@@ -1,5 +1,6 @@
 /** @file index.js
  * @description The server file for tanos.fm, handles every request and functionality.
+ * TODO: fix illegal handles, only allow requests from the site itself not from outsiders
  */
 
 "use strict";
@@ -53,7 +54,7 @@ const rateLimiter = (req, res, next) => {
   next();
 };
 
-// -- Importing all the code, seperated them for better organization and maintainability
+// --> Importing all the code, seperated them for better organization and maintainability
 const { Client } = require("lrclib-api");
 const lrcClient = new Client();
 
@@ -66,12 +67,11 @@ const getAlbumCoverFromSoundCloud = require("./services/albums/getAlbumCoverFrom
 const getAlbumCoverFromLastFM = require("./services/albums/getAlbumCoverFromLastFM.js");
 const { searchQQMusic, searchNetease } = require("./services/lyrics/search.js");
 const getNeteaseCloudMusicLyrics = require("./services/lyrics/getNeteaseCloudMusicLyrics.js");
-const ipBlocker = require("./services/ipBlocker.js");
-
-// -- Unnecessary but might be fixing something
 const SOUNDCLOUD_CLIENT_ID = process.env.SOUNDCLOUD_CLIENT_ID;
 
-// -- Loading the site
+const ipBlocker = require("./services/ipBlocker.js");
+
+// --> Loading the site
 const app = express();
 app.set("trust proxy", true);
 app.use(cors());
@@ -79,7 +79,7 @@ app.use(ipBlocker);
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "..", "client", "build")));
 
-// -- Second part of importing all the codes
+// --> Second part of importing all the codes
 const fetchRoutes = require("./functions/fetch");
 const downloadRoutes = require("./functions/download");
 const streamRoutes = require("./functions/stream");
@@ -92,7 +92,7 @@ app.use("/stream", streamRoutes);
 app.use("/lyrics", lyricRoutes);
 app.use("/api", apiRoutes);
 
-// -- Load the built static page
+// --> Load the built static page
 app.get("/checkIP", ipBlocker, (req, res) => {
   res.status(200).send("access allowed");
 });
@@ -103,7 +103,7 @@ app.get("*", (req, res) => {
 
 app.use(rateLimiter);
 
-// -- Small utility to clean up generated files
+// --> Small utility to clean up generated files
 const cleanupTempFiles = () => {
   const tempFilePatterns = [
     /^temp_cover_.*\.png$/,
@@ -149,7 +149,7 @@ const cleanupTempFiles = () => {
 setInterval(cleanupTempFiles, 5 * 60 * 1000); // Toggle
 cleanupTempFiles(); // Toggle
 
-// -- Create a log, it's stated in the ToS that it'll be logged anyway
+// --> Create a log, it's stated in the ToS that it'll be logged anyway
 function logToHistory(requestData) {
   const historyPath = path.join(__dirname, "history.json");
   let history = [];
@@ -181,7 +181,7 @@ function logToHistory(requestData) {
   }
 }
 
-// -- Create a pattern for search variations, to grab the best results
+// --> Create a pattern for search variations, to grab the best results
 function generateSearchVariations(title, artist) {
   const variations = [];
 
@@ -218,7 +218,7 @@ function generateSearchVariations(title, artist) {
   return [...new Set(variations)];
 }
 
-// -- Translation part.
+// --> Translation part.
 const wanakana = require("wanakana");
 const translate = require("@iamtraction/google-translate");
 
@@ -294,7 +294,7 @@ function sanitizeFilename(filename) {
   return romaji.replace(/[^a-zA-Z0-9\s-]/g, "").trim();
 }
 
-// -- push the files
+// --> push the files
 app.use(express.static(path.join(__dirname, "../client/build")));
 
 app.get("*", (req, res) => {
@@ -303,5 +303,10 @@ app.get("*", (req, res) => {
 
 const PORT = 3001;
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  console.log(
+    `[ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - ]
+
+If you're debugging, the link should be available on http://localhost:${PORT} (ctrl+click it)
+`
+  );
 });

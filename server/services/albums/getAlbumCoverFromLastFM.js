@@ -38,7 +38,7 @@ async function getAlbumCoverFromLastFM(artist, track, apiKey) {
         };
       }
     }
-    return { imageBuffer: null, genre: genre };
+    return { imageBuffer: null, genre: null };
   } catch (error) {
     console.error("Error getting LastFM artwork:", error);
     artworkFailed = true;

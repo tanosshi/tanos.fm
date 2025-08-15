@@ -1,3 +1,7 @@
+/** @file ipBlocker.js
+ * @description Block dangerous IPs
+ */
+
 const fs = require("fs");
 const https = require("https");
 const ipRangeCheck = require("ip-range-check");

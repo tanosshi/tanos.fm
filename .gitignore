@@ -16,3 +16,4 @@ client/src/ol.app.js
 *\history.json
 *temp_*.*
 ip-list.txt
+server/functions/history.json

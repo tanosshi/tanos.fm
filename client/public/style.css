@@ -160,3 +160,6 @@ html {
 .glow-anim {
   animation: glowPulse 2s infinite alternate;
 }
+#search {
+  opacity: 0;
+}
