@@ -130,6 +130,7 @@ export const HeaderSection = ({
         style={{
           transform: `translateY(${showSupported ? "0" : "-10px"})`,
           transition: "all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)",
+          marginBottom: "-5px",
         }}
       >
         <div className="p-4 bg-[#0a0a0a]/50 backdrop-blur-lg rounded-lg border border-[#333333]/50 relative">
@@ -406,7 +407,13 @@ export const SearchButton = ({
     onMouseUp={handleButtonMouseUp}
   >
     <span id="btn-text" className="flex items-center gap-2">
-      grab <span className="text-lg sm:text-xl">⚡</span>
+      grab
+      <span
+        className="text-lg sm:text-xl"
+        style={{ filter: `${currentTheme?.emojiColor ?? "brightness('1')"}` }}
+      >
+        ⚡
+      </span>
     </span>
     <svg
       id="spinner"
@@ -550,7 +557,7 @@ export const DownloadPanel = ({
                 style={{
                   objectFit: "contain",
                   background: "#fff",
-                  width: "200px",
+                  width: "70px",
                 }}
               />
               <p className="text-gray-200 text-center mb-1 font-semibold">

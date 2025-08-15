@@ -107,7 +107,7 @@ function App() {
   const [showSupported, setShowSupported] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
   const [showPrivacy, setShowPrivacy] = useState(false);
-  const [selectedPlatform, setSelectedPlatform] = useState(null);
+  const [, setSelectedPlatform] = useState(null);
   const [result, setResult] = useState("");
   const [blocked, setBlocked] = useState(false);
   const [checked, setChecked] = useState(false);
@@ -133,16 +133,7 @@ function App() {
   const { isAgreeing, hasAgreedToTerms, isFadingOut, agreeToTerms } =
     useTermsAgreement();
   const { downloading, handleDownload } = useDownload();
-  const {
-    isLoadingLyrics,
-    setIsLoadingLyrics,
-    showRomanizedPopup,
-    setShowRomanizedPopup,
-    isYesLoading,
-    setIsYesLoading,
-    isProcessing,
-    setIsProcessing,
-  } = useLyrics();
+  const { isLoadingLyrics, setIsLoadingLyrics, setShowRomanizedPopup } = useLyrics();
 
   const currentTheme = themes[currentThemeIndex];
 
@@ -298,7 +289,7 @@ function App() {
     `;
     document.head.appendChild(style);
     return () => document.head.removeChild(style);
-  }, [glintAnimation]);
+  }, []);
 
   useEffect(() => {
     const style = document.createElement("style");
@@ -573,12 +564,11 @@ function App() {
                     style={{
                       transform: `translateY(${showPrivacy ? "0" : "-10px"})`,
                       transition: "all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)",
+                      marginTop: "-15px",
+                      marginBottom: "50px",
                     }}
                   >
-                    <div
-                      style={{ marginBottom: "-30px" }}
-                      className="p-4 bg-[#0a0a0a]/50 backdrop-blur-lg rounded-lg border border-[#333333]/50"
-                    >
+                    <div className="p-4 bg-[#0a0a0a]/50 backdrop-blur-lg rounded-lg border border-[#333333]/50">
                       <div className="space-y-4">
                         <h3 className="text-lg sm:text-xl font-semibold text-gray-200">
                           Privacy Policy

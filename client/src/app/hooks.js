@@ -2,7 +2,7 @@
  * @description The file containing the variables and functions used for the front-end.
  */
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 
 export const useButtonScale = () => {
   const [buttonScale, setButtonScale] = useState(1);

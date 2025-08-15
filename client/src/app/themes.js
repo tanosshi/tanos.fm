@@ -13,6 +13,7 @@ export const themes = [
     emoji: "🌸",
     backgroundImage: "/images/puresakura.png",
     backgroundBlur: "25px",
+    emojiColor: "sepia(1) saturate(4) hue-rotate(300deg) brightness(1)",
   },
   {
     name: "Dark",
@@ -21,9 +22,10 @@ export const themes = [
     cardInner: "#161616",
     accent: "#f83858",
     border: "#333333",
-    emoji: "🌸",
+    emoji: "🩸",
     backgroundImage: "hero-bg.jpg",
     backgroundBlur: "25px",
+    emojiColor: "sepia(1) saturate(7) hue-rotate(350deg) brightness(0.95)",
   },
   {
     name: "Purple",
@@ -35,6 +37,7 @@ export const themes = [
     emoji: "💜",
     backgroundImage: "/images/purple.png",
     backgroundBlur: "10px",
+    emojiColor: "sepia(1) saturate(6) hue-rotate(270deg) brightness(1)",
   },
   {
     name: "Turquoise",
@@ -46,6 +49,7 @@ export const themes = [
     emoji: "🌊",
     backgroundImage: "/images/puresakura.png",
     backgroundBlur: "25px",
+    emojiColor: "sepia(1) saturate(5) hue-rotate(140deg) brightness(1)",
   },
   {
     name: "Forest",
@@ -57,6 +61,7 @@ export const themes = [
     emoji: "🌿",
     backgroundImage: "./images/puresakura.png",
     backgroundBlur: "40px",
+    emojiColor: "sepia(1) saturate(5) hue-rotate(60deg) brightness(1.1)",
   },
 ];
 

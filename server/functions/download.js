@@ -428,35 +428,52 @@ router.get("/", async (req, res) => {
 
     if (url.includes("twitter.com") || url.includes("x.com")) {
       const result = await TwitterDL(url);
-      const highestQualityVideo = result.result.media[0].videos.reduce(
-        (prev, current) => {
-          return prev.bitrate > current.bitrate ? prev : current;
+      let highestQualityMedia;
+      let isTwtImage = false;
+      console.log(result.result.media[0]);
+      try {
+        if (
+          result.result.media &&
+          result.result.media[0] &&
+          Array.isArray(result.result.media[0].videos) &&
+          result.result.media[0].videos.length > 0
+        ) {
+          highestQualityMedia = result.result.media[0].videos.reduce(
+            (prev, current) => (prev.bitrate > current.bitrate ? prev : current)
+          );
+        } else {
+          highestQualityMedia = result.result.media[0].image;
+          isTwtImage = true;
         }
-      );
-      console.log("Highest quality video URL:", highestQualityVideo.url);
+      } catch {
+        highestQualityMedia = result.result.media[0].image;
+        isTwtImage = true;
+      }
+
       res.setHeader(
         "Content-Disposition",
-        `attachment; filename="${
+        `attachment; filename="${sanitizeFilename(
           result.result.description || "Twitter Media"
-        }.mp4"`
+        )}.${isTwtImage ? "jpg" : "mp4"}"`
       );
-      res.setHeader("Content-Type", "video/mp4");
+      res.setHeader("Content-Type", isTwtImage ? "image/png" : "video/mp4");
 
       try {
         const response = await axios({
           method: "get",
-          url: highestQualityVideo.url,
+          url: isTwtImage ? highestQualityMedia : highestQualityMedia.url,
           responseType: "stream",
         });
 
         response.data.pipe(res);
       } catch (error) {
-        console.error("Error downloading video:", error);
+        console.error("Error downloading media:", error);
         return res.status(500).json({
           valid: false,
-          message: "Failed to download video " + error,
+          message: "Failed to download media " + error,
         });
       }
+      return;
     }
 
     if (url.includes("spotify.com")) {
@@ -512,11 +529,6 @@ router.get("/", async (req, res) => {
         message: "Failed to download media " + error,
       });
     }
-    return;
-    res.status(404).json({
-      valid: false,
-      message: "Couldnt identify the URL, sending you to the URL.",
-    });
     return;
   } catch (error) {
     console.error("Download error:", error);
