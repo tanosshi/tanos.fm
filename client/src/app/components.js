@@ -395,11 +395,10 @@ export const SearchButton = ({
   <button
     onClick={fetchData}
     id="fc"
-    className={`mt-4 px-12 py-3 backdrop-blur-lg text-gray-200 rounded-lg border flex items-center text-base sm:text-lg w-full justify-center transition-all duration-200 cursor-pointer`}
+    className={`mt-4 px-12 py-3 backdrop-blur-lg text-gray-200 rounded-lg border flex items-center text-base sm:text-lg w-full justify-center transition-all duration-200 cursor-pointer hover:scale-105`}
     style={{
       backgroundColor: `${currentTheme?.accent ?? "#ff80bf"}33`,
       borderColor: `${currentTheme?.accent ?? "#ff80bf"}66`,
-      transform: `scale(${buttonScale})`,
       transition: "transform 0.2s cubic-bezier(0.34,1.56,0.64,1)",
       boxShadow: `0 2px 16px 0 ${currentTheme?.accent ?? "#ff80bf"}22`,
     }}
@@ -410,7 +409,7 @@ export const SearchButton = ({
       grab
       <span
         className="text-lg sm:text-xl"
-        style={{ filter: `${currentTheme?.emojiColor ?? "brightness('1')"}` }}
+        style={{ filter: `${currentTheme?.grabcolor ?? "brightness('1')"}` }}
       >
         ⚡
       </span>

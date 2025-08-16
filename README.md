@@ -6,7 +6,7 @@ _**tanos**'s **f**ree **m**edia is a quick yet ad-free media downloader, made fo
 
 <div align="center">
 
-![Version](https://img.shields.io/badge/version-1.0.0-blue.svg?cacheSeconds=2592000)
+![Version](https://img.shields.io/badge/version-1.4.6-blue.svg?cacheSeconds=2592000)
 ![License](https://img.shields.io/badge/license-Educational-green.svg)
 ![Node](https://img.shields.io/badge/node-%3E%3D16.0.0-brightgreen.svg)
 ![Status](https://img.shields.io/badge/status-Active-success.svg)
@@ -105,7 +105,7 @@ npm start
 | 🚦 Rate limiting system           | ✅ **Complete**    | High     | ✅  |
 | 🔌 IP Address Blocker             | ✅ **Complete**    | High     | ✅  |
 | 🔑 API Keys for projects          | 🟡 **Almost done** | Highest  | ⏳  |
-| 🎛️ A left panel with comments     | 🔄 **Planned**     | Low      | TBD |
+| 🎛️ A panel with comments          | 🔄 **Planned**     | Low      | TBD |
 | 📼 Add opus/webm/flac support     | 🔄 **Planned**     | Low      | TBD |
 | 🔍 Search for music               | 🔄 **Planned**     | Lowered  | TBD |
 | 🤖 Write scraper for Reddit       | 💤 **One day**     | Lowest   | TBD |
@@ -161,15 +161,6 @@ npm start
 | **fluent-ffmpeg**         | 🎬 Media conversion engine      |
 
 ---
-
-## 📊 tanos.fm Stats
-
-<div align="center">
-
-![GitHub stars](https://img.shields.io/github/stars/tanosshi/tanos.fm?style=social)
-![GitHub pull requests](https://img.shields.io/github/issues-pr/tanosshi/tanos.fm)
-
-</div>
 
 ---
 

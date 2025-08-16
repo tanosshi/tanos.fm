@@ -133,7 +133,8 @@ function App() {
   const { isAgreeing, hasAgreedToTerms, isFadingOut, agreeToTerms } =
     useTermsAgreement();
   const { downloading, handleDownload } = useDownload();
-  const { isLoadingLyrics, setIsLoadingLyrics, setShowRomanizedPopup } = useLyrics();
+  const { isLoadingLyrics, setIsLoadingLyrics, setShowRomanizedPopup } =
+    useLyrics();
 
   const currentTheme = themes[currentThemeIndex];
 
@@ -672,7 +673,7 @@ function App() {
 
       {/* Versioning */}
       <div className="absolute bottom-5 right-7 text-gray-200 text-sm z-11 opacity-7 hidden sm:block">
-        v1.2.6
+        v1.4.6
       </div>
     </div>
   );

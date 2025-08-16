@@ -145,14 +145,25 @@ async function processFetch(req, res) {
 
       console.log(pindata);
 
+      if (
+        !pindata.result?.description ||
+        !pindata.result?.image ||
+        !pindata.result?.images.orig
+      ) {
+        return res.status(400).json({
+          valid: false,
+          message: "Pinterest pin not found or privated",
+        });
+      }
+
       mediaInfo = {
         isPinterest: true,
-        title: pindata.result.description || "Pinterest Pin",
-        url: pindata.result.image || pindata.result.images.orig,
-        image: pindata.result.image || pindata.result.images.orig,
-        author: pindata.result.user.username || "Unknown user",
+        title: pindata.result?.description || "Pinterest Pin",
+        url: pindata.result?.image || pindata.result?.images.orig,
+        image: pindata.result?.image || pindata.result?.images.orig,
+        author: pindata.result?.user.username || "Unknown user",
         profilePicture:
-          pindata.result.user.avatar_url ||
+          pindata.result?.user.avatar_url ||
           "https://abs.twimg.com/sticky/default_profile_images/default_profile.png",
       };
     } else if (
@@ -184,26 +195,40 @@ async function processFetch(req, res) {
       const tiktokData = await ttdl(url);
       const randomNumber = Math.floor(Math.random() * 6) + 5;
 
+      if (!tiktokData || !tiktokData.video) {
+        return res.status(400).json({
+          valid: false,
+          message: "TikTok video not found or privated",
+        });
+      }
+
       mediaInfo = {
-        title: tiktokData.title,
-        duration: tiktokData.published,
-        quality: "HD",
-        size: "~" + randomNumber + " MB",
-        url: tiktokData.video,
-        isTikTok: true,
-        likes: tiktokData.like,
-        comments: tiktokData.comment,
-        bookmark: tiktokData.bookmark,
-        views: tiktokData.views,
-        author: tiktokData.author,
-        username: tiktokData.username,
-        profilePicture: tiktokData.avatar,
-        thumbnail: tiktokData.cover,
+        title: tiktokData?.title || 0,
+        duration: tiktokData?.published || 0,
+        quality: "HD" || 0,
+        size: "~" + randomNumber + " MB" || 0,
+        url: tiktokData?.video || 0,
+        isTikTok: true || 0,
+        likes: tiktokData?.like || 0,
+        comments: tiktokData?.comment || 0,
+        bookmark: tiktokData?.bookmark || 0,
+        views: tiktokData?.views || 0,
+        author: tiktokData?.author || 0,
+        username: tiktokData?.username || 0,
+        profilePicture: tiktokData?.avatar || 0,
+        thumbnail: tiktokData?.cover || undefined,
       };
     } else if (url.includes("instagram.com")) {
       logData.mediaType = "instagram";
       const instagramData = await igdl(url);
       let igdata = await instagramData.data;
+
+      if (!igdata || !igdata[0].url) {
+        return res.status(400).json({
+          valid: false,
+          message: "Instagram media not found or privated",
+        });
+      }
 
       mediaInfo = {
         title: "Instagram Media",
@@ -215,19 +240,27 @@ async function processFetch(req, res) {
       try {
         const result = await TwitterDL(url.replace("fxtwitter.com", "x.com"));
         console.log("Twitter result:", result);
+
+        if (!result || !result.result || !result.result?.media[0]) {
+          return res.status(400).json({
+            valid: false,
+            message: "Twitter media not found or privated",
+          });
+        }
+
         mediaInfo = {
-          title: result.result.description || "Twitter Media",
-          url: result.result.media[0].url || url,
+          title: result.result?.description || "Twitter Media",
+          url: result.result?.media[0]?.url || url,
           isTwitter: true,
-          author: result.result.author.bio || "Twitter User",
-          username: result.result.author.username || "user",
+          author: result.result?.author?.bio || "Twitter User",
+          username: result.result?.author?.username || "user",
           profilePicture:
-            result.result.author.profileImageUrl ||
+            result.result?.author?.profileImageUrl ||
             "https://abs.twimg.com/sticky/default_profile_images/default_profile.png",
-          likes: result.result.statistics.favoriteCount || 0,
-          retweets: result.result.statistics.retweetCount || 0,
-          replies: result.result.statistics.replieCount || 0,
-          views: result.result.statistics.viewCount || 0,
+          likes: result.result?.statistics?.favoriteCount || 0,
+          retweets: result.result?.statistics?.retweetCount || 0,
+          replies: result.result?.statistics?.replieCount || 0,
+          views: result.result?.statistics?.viewCount || 0,
         };
       } catch (error) {
         console.error("Twitter download error:", error);

@@ -225,7 +225,47 @@ router.get("/", async (req, res) => {
               "comment=Downloaded via tanos.fm - No Artwork",
             ]);
 
-            return ffmpegCommand.pipe(res, { end: true });
+            const randomFileNameNoArt = crypto.randomBytes(16).toString("hex");
+            const tempOutputPathNoArt = path.join(
+              __dirname,
+              `temp_output_${randomFileNameNoArt}.mp3`
+            );
+            tempFiles.add({ path: tempOutputPathNoArt, timestamp: Date.now() });
+
+            ffmpegCommand
+              .on("start", () => console.log("FFmpeg (no artwork) started"))
+              .on("end", () => {
+                const readStream = fs.createReadStream(tempOutputPathNoArt);
+                readStream.pipe(res);
+                readStream.on("end", () => {
+                  tempFiles.delete({ path: tempOutputPathNoArt });
+                  fs.unlink(tempOutputPathNoArt, (err) => {
+                    if (err)
+                      console.error("Error deleting temp output file:", err);
+                  });
+                });
+              })
+              .on("error", (err) => {
+                console.error("FFmpeg error (no artwork):", err);
+                tempFiles.delete({ path: tempOutputPathNoArt });
+                fs.unlink(tempOutputPathNoArt, (unlinkErr) => {
+                  if (unlinkErr)
+                    console.error(
+                      "Error deleting temp output file:",
+                      unlinkErr
+                    );
+                });
+                if (!res.headersSent) {
+                  res.status(500).json({
+                    valid: false,
+                    message: "Error converting audio",
+                    error: err.message,
+                  });
+                }
+              })
+              .saveToFile(tempOutputPathNoArt);
+
+            return;
           }
           try {
             const pngBuffer = await sharp(imageBuffer).png().toBuffer();
@@ -307,16 +347,47 @@ router.get("/", async (req, res) => {
               .saveToFile(tempOutputPath);
           } catch (error) {
             console.error("Error processing artwork:", error);
-            ffmpeg(audioStream)
+
+            // As a fallback, save the converted audio to a temp file and stream
+            // it. This avoids piping to stdout which can fail on Windows.
+            const randomFileNameFb = crypto.randomBytes(16).toString("hex");
+            const tempOutputPathFb = path.join(
+              __dirname,
+              `temp_output_${randomFileNameFb}.mp3`
+            );
+            tempFiles.add({ path: tempOutputPathFb, timestamp: Date.now() });
+
+            ffmpeg()
+              .input(audioStream)
               .audioCodec("libmp3lame")
               .audioBitrate("320k")
-              .outputFormat("mp3")
               .addOutputOption("-metadata", `title=${videoTitle}`)
               .addOutputOption("-metadata", `artist=${author}`)
               .addOutputOption("-metadata", `album=${videoTitle} - ${author}`)
               .addOutputOption("-metadata", `genre=${genre || "Unknown"}`)
+              .toFormat("mp3")
+              .on("start", () => console.log("FFmpeg fallback started"))
+              .on("end", () => {
+                const readStream = fs.createReadStream(tempOutputPathFb);
+                readStream.pipe(res);
+                readStream.on("end", () => {
+                  tempFiles.delete({ path: tempOutputPathFb });
+                  fs.unlink(tempOutputPathFb, (err) => {
+                    if (err)
+                      console.error("Error deleting temp output file:", err);
+                  });
+                });
+              })
               .on("error", (err) => {
-                console.error("FFmpeg error:", err);
+                console.error("FFmpeg error (fallback):", err);
+                tempFiles.delete({ path: tempOutputPathFb });
+                fs.unlink(tempOutputPathFb, (unlinkErr) => {
+                  if (unlinkErr)
+                    console.error(
+                      "Error deleting temp output file:",
+                      unlinkErr
+                    );
+                });
                 if (!res.headersSent) {
                   res.status(500).json({
                     valid: false,
@@ -324,7 +395,9 @@ router.get("/", async (req, res) => {
                   });
                 }
               })
-              .pipe(res, { end: true });
+              .saveToFile(tempOutputPathFb);
+
+            return;
           }
         } else if (format === "mp4") {
           console.log("Downloading MP4 from YouTube");
@@ -336,7 +409,7 @@ router.get("/", async (req, res) => {
           );
           res.setHeader("Content-Type", "video/mp4");
           const bestFormat = ytdl.chooseFormat(info.formats, {
-            quality: "highestvideo",
+            quality: "highest",
           });
 
           const videoStream = ytdl.downloadFromInfo(info, {

@@ -92,11 +92,11 @@ router.get("/", async (req, res) => {
 
   return res.status(200).json({
     valid: true,
-    message: response.mediaInfo.title || null,
-    download_url: response.mediaInfo.downloadUrl || null,
+    message: response.mediaInfo?.title || null,
+    download_url: response.mediaInfo?.downloadUrl || null,
     backup_download_url: response.mediaInfo.format?.url || null,
-    size: response.mediaInfo.size || null,
-    lyrics: response.mediaInfo.download_lrc_file || null,
+    size: response.mediaInfo?.size || null,
+    lyrics: response.mediaInfo?.download_lrc_file || null,
     note: "Most sources should work, except for the ones requiring conversion",
   });
 });

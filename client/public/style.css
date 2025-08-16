@@ -164,3 +164,7 @@ html {
 #search {
   opacity: 0;
 }
+
+#fc:hover {
+  transform: scale(1.02);
+}
