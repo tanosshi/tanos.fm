@@ -54,9 +54,13 @@ export const randomTexts = [
   "is this what you were looking for?",
   "here's your result!",
   "does this look right?",
+  "do you like what you see?",
+  "HERE HERHEHRE I GOT IT FOR YOuUUU!!!",
   "is this the file you wanted?",
   "your download is ready!",
   "download your likings ;)",
+  "here you gooo!!!!!",
+  "enjoooy your file :D",
 ];
 
 export const glintAnimation = `

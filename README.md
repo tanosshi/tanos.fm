@@ -36,9 +36,9 @@ Clean experience without interruptions
 </td>
 <td width="33%" align="center">
 
-### ⚡ **Quickest**
+### ⚡ **Rapid**
 
-Direct download, quick FFmpeg performance
+Direct download, with quick FFmpeg performance
 
 </td>
 <td width="33%" align="center">

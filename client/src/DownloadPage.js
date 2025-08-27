@@ -1,6 +1,6 @@
 /** @file DownloadPage.js
  * @description Used to be the download page, but downloads are way too quick now to be necessary.
- * TODO: Remove this page completely.
+ * TODO: Remove this page completely without causing harm.
  */
 
 import React, { useEffect, useState } from "react";

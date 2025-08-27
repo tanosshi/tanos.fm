@@ -24,8 +24,8 @@ export const themes = [
     border: "#333333",
     emoji: "🩸",
     backgroundImage: "hero-bg.jpg",
-    backgroundBlur: "25px",
-    grabcolor: "sepia(1) saturate(7) hue-rotate(350deg) brightness(0.95)",
+    backgroundBlur: "30px",
+    grabcolor: "sepia(1) saturate(7) hue-rotate(350deg) brightness(0.94)",
   },
   {
     name: "purpish",

@@ -2,7 +2,7 @@
  * @description The file containing everything you see in the front-end.
  */
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 export const NotificationPanel = ({ notification, currentTheme }) => (
   <div
@@ -56,8 +56,38 @@ export const HeaderSection = ({
   showSupported,
   setShowSupported,
   setSelectedPlatform,
+  emojiAltStyle,
+  setEmojiStyle,
 }) => {
   const [selectedPlatform, setSelectedPlatformLocal] = useState(null);
+  useEffect(() => {
+    // this code is for windows 10 because their emojis suck
+    // i know app version is deprecated but it still works
+    if (
+      (typeof window !== "undefined" &&
+        window.navigator.userAgent.includes("Windows NT 10.0")) ||
+      (typeof navigator !== "undefined" &&
+        navigator.appVersion.includes("Windows NT 10.0"))
+    ) {
+      // call the setter passed from the parent
+      if (typeof setEmojiStyle === "function") {
+        setEmojiStyle(
+          <img
+            src="/images/logo192.png"
+            alt="logo"
+            style={{
+              width: "1em",
+              height: "1em",
+              display: "inline",
+              zoom: "1.283",
+            }}
+          />
+        );
+      }
+    }
+  }, [setEmojiStyle]);
+
+  const nextGlow = emojiAltStyle ? glowIntensity * 2.8 : glowIntensity * 1.1;
 
   return (
     <div className="flex flex-col items-center space-y-2 mb-6 float-appear">
@@ -66,10 +96,10 @@ export const HeaderSection = ({
         className="text-4xl sm:text-6xl filter drop-shadow-lg relative cursor-pointer glow-anim ͼf"
         style={{
           filter: `drop-shadow(0 0 8px ${currentTheme.accent}${Math.round(
-            glowIntensity * 255
+            nextGlow * 255
           ).toString(16)})`,
           textShadow: `0 0 10px ${currentTheme.accent}${Math.round(
-            glowIntensity * 255
+            nextGlow * 255
           ).toString(16)}`,
           transform: `rotate(${rotation}deg) scale(${isHovered ? 1.15 : 1})`,
           transition:
@@ -79,7 +109,7 @@ export const HeaderSection = ({
         onMouseLeave={handleEmojiLeave}
         onClick={handleEmojiClick}
       >
-        {currentTheme.emoji}
+        {emojiAltStyle || currentTheme.emoji}
       </span>
       <h1
         className="text-xl sm:text-2xl font-semibold text-gray-200"
@@ -376,6 +406,7 @@ export const SearchButton = ({
   handleButtonMouseDown,
   handleButtonMouseUp,
   currentTheme,
+  emojiAltStyle,
 }) => (
   <button
     onClick={fetchData}
@@ -394,7 +425,12 @@ export const SearchButton = ({
       grab
       <span
         className="text-lg sm:text-xl"
-        style={{ filter: `${currentTheme?.grabcolor ?? "brightness('1')"}` }}
+        style={{
+          filter: `${currentTheme?.grabcolor ?? "brightness('1')"}`,
+          transform: emojiAltStyle ? "scaleX(0.65)" : "scaleX(1)",
+          zoom: emojiAltStyle ? 0.9 : 1,
+          transform: `scale(${buttonScale})`,
+        }}
       >
         ⚡
       </span>

@@ -1,6 +1,6 @@
 {
   "name": "tanos.fm-client",
-  "version": "1.0.0",
+  "version": "1.5.1",
   "private": true,
   "proxy": "http://localhost:3001",
   "dependencies": {

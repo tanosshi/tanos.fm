@@ -87,6 +87,8 @@ function App() {
 
   const currentTheme = themes[currentThemeIndex];
 
+  const [emojiAltStyle, setEmojiStyle] = useState(null);
+
   const [randomPlaceholderText] = useState(
     () => placeholders[Math.floor(Math.random() * placeholders.length)]
   );
@@ -422,6 +424,11 @@ function App() {
                 showSupported={showSupported}
                 setShowSupported={setShowSupported}
                 setSelectedPlatform={setSelectedPlatform}
+                emojiAltStyle={emojiAltStyle}
+                setEmojiStyle={setEmojiStyle}
+                handleButtonMouseDown={handleButtonMouseDown}
+                handleButtonMouseUp={handleButtonMouseUp}
+                buttonScale={buttonScale}
               />
 
               {!hasAgreedToTerms ? (
@@ -553,12 +560,15 @@ function App() {
                     <button
                       onClick={agreeToTerms}
                       disabled={isAgreeing}
+                      onMouseDown={handleButtonMouseDown}
+                      onMouseUp={handleButtonMouseUp}
                       className="px-8 py-3 bg-[#161616]/70 backdrop-blur-md rounded-lg border border-[#333333]/50 hover:border-[#444444]/70 transition-colors cursor-pointer text-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
                       style={{
                         backgroundColor: `${currentTheme.accent}33`,
                         borderColor: `${currentTheme.accent}66`,
                         width: "100%",
                         fontSize: "1rem",
+                        transform: `scale(${buttonScale})`,
                         marginTop: "-30px",
                       }}
                     >
@@ -589,6 +599,7 @@ function App() {
                     handleButtonMouseDown={handleButtonMouseDown}
                     handleButtonMouseUp={handleButtonMouseUp}
                     currentTheme={currentTheme}
+                    emojiAltStyle={emojiAltStyle}
                   />
                 </>
               )}
@@ -624,7 +635,7 @@ function App() {
 
       {/* Versioning */}
       <div className="absolute bottom-5 right-7 text-gray-200 text-sm z-11 opacity-7 hidden sm:block">
-        v1.4.6
+        v1.5.1
       </div>
     </div>
   );
