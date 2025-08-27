@@ -189,9 +189,12 @@ router.get("/", async (req, res) => {
 
           const ffmpegCommand = ffmpeg(audioStream)
             .audioCodec("libmp3lame")
-            .audioBitrate(320)
+            .audioBitrate("320k")
             .format("mp3")
-            .on("start", () => console.log("Starting MP3 conversion..."))
+            .on("start", (cmd) => {
+              console.log("Starting MP3 conversion...");
+              console.log("FFmpeg command:", cmd);
+            })
             .on("error", (err) => {
               console.error("FFmpeg error:", err);
               if (!res.headersSent) {
@@ -205,7 +208,9 @@ router.get("/", async (req, res) => {
 
           // go go go
           const escapeMetadata = (str) => {
-            return String(str)
+            let value = String(str || "");
+            value = value.replace(/^[-\s]+/, "");
+            return value
               .replace(/=/g, "\\=") // Escape equals signs
               .replace(/:/g, "\\:") // Escape colons
               .replace(/#/g, "\\#") // Escape hashes
@@ -233,7 +238,10 @@ router.get("/", async (req, res) => {
             tempFiles.add({ path: tempOutputPathNoArt, timestamp: Date.now() });
 
             ffmpegCommand
-              .on("start", () => console.log("FFmpeg (no artwork) started"))
+              .on("start", (cmd) => {
+                console.log("FFmpeg (no artwork) started");
+                console.log("FFmpeg (no artwork) command:", cmd);
+              })
               .on("end", () => {
                 const readStream = fs.createReadStream(tempOutputPathNoArt);
                 readStream.pipe(res);
@@ -268,7 +276,12 @@ router.get("/", async (req, res) => {
             return;
           }
           try {
-            const pngBuffer = await sharp(imageBuffer).png().toBuffer();
+            let pngBuffer;
+            try {
+              pngBuffer = await sharp(imageBuffer).png().toBuffer();
+            } catch (e) {
+              pngBuffer = null;
+            }
             if (!pngBuffer) pngBuffer = imageBuffer;
 
             console.log("Sharp processing complete.");
@@ -300,13 +313,20 @@ router.get("/", async (req, res) => {
               .addOutputOption("-metadata:s:v", "title=Album cover")
               .addOutputOption("-metadata:s:v", "comment=Cover (front)")
               .addOutputOption("-disposition:v", "attached_pic")
-              .addOutputOption("-metadata", `title=${videoTitle}`)
-              .addOutputOption("-metadata", `artist=${author}`)
-              .addOutputOption("-metadata", `album=${videoTitle} - ${author}`)
+              .addOutputOption(
+                "-metadata",
+                `title=${escapeMetadata(videoTitle)}`
+              )
+              .addOutputOption("-metadata", `artist=${escapeMetadata(author)}`)
+              .addOutputOption(
+                "-metadata",
+                `album=${escapeMetadata(`${videoTitle} - ${author}`)}`
+              )
               .addOutputOption("-metadata", `genre=${genre || "Unknown"}`)
               .toFormat("mp3")
-              .on("start", () => {
+              .on("start", (cmd) => {
                 console.log("FFmpeg processing started");
+                console.log("FFmpeg (with artwork) command:", cmd);
               })
               .on("end", () => {
                 console.log("FFmpeg processing finished");
@@ -361,12 +381,20 @@ router.get("/", async (req, res) => {
               .input(audioStream)
               .audioCodec("libmp3lame")
               .audioBitrate("320k")
-              .addOutputOption("-metadata", `title=${videoTitle}`)
-              .addOutputOption("-metadata", `artist=${author}`)
-              .addOutputOption("-metadata", `album=${videoTitle} - ${author}`)
+              .addOutputOption(
+                "-metadata",
+                `title=${escapeMetadata(videoTitle)}`
+              )
+              .addOutputOption("-metadata", `artist=${escapeMetadata(author)}`)
+              .addOutputOption(
+                "-metadata",
+                `album=${escapeMetadata(`${videoTitle} - ${author}`)}`
+              )
               .addOutputOption("-metadata", `genre=${genre || "Unknown"}`)
               .toFormat("mp3")
-              .on("start", () => console.log("FFmpeg fallback started"))
+              .on("start", (cmd) => {
+                console.log("FFmpeg (fallback) command:", cmd);
+              })
               .on("end", () => {
                 const readStream = fs.createReadStream(tempOutputPathFb);
                 readStream.pipe(res);

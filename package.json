@@ -6,8 +6,10 @@
   "scripts": {
     "start": "npm run build --prefix client && node server/index.js",
     "server": "node server/index.js",
-    "postinstall": "npm install --prefix client && npm install --prefix server",
-    "install-deps": "npm install concurrently && concurrently \"cd server && npm install\" \"cd client && npm install\" \"npm install\" && npm run postinstall",
+    "install:root": "npm ci",
+    "install:client": "npm ci --prefix client",
+    "install:server": "npm ci --prefix server",
+    "install-deps": "npm run install:root && npm run install:client && npm run install:server", 
     "build": "cd client && npm run build"
   },
   "dependencies": {

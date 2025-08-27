@@ -517,7 +517,7 @@ export const DownloadPanel = ({
         transition: "all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)",
         paddingRight: "32px",
         paddingLeft: "32px",
-        paddingBottom: "12px",
+        paddingBottom: "32px",
         paddingTop: "32px",
         borderRadius: "13px",
       }}
