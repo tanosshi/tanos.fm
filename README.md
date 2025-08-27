@@ -79,32 +79,32 @@ npm start
 
 <div align="center">
 
-| Feature                           | Status             | Priority | ETA |
-| --------------------------------- | ------------------ | -------- | --- |
-| 🎧 Spotify Integration            | ✅ **Complete**    | High     | ✅  |
-| 📺 YouTube Integration            | ✅ **Complete**    | High     | ✅  |
-| 🎶 YouTube Music Integration      | ✅ **Complete**    | High     | ✅  |
-| 🎭 TikTok Integration             | ✅ **Complete**    | High     | ✅  |
-| 🐦 Twitter Integration            | ✅ **Complete**    | High     | ✅  |
-| 📷 Instagram Integration          | ✅ **Complete**    | High     | ✅  |
-| ☁️ SoundCloud Integration         | ✅ **Complete**    | High     | ✅  |
-| 📌 Pinterest Integration          | ✅ **Complete**    | Medium   | ✅  |
-| 📁 Indirect Google Drive Download | ✅ **Complete**    | Low      | ✅  |
-| 🔧 FFmpeg Optimization            | ✅ **Complete**    | High     | ✅  |
-| 📹 Full Quality Video Downloads   | ✅ **Complete**    | Medium   | ✅  |
-| 🧹 Code Cleanup & UI Polish       | ✅ **Complete**    | High     | ✅  |
-| 💻 Modern Frontend                | ✅ **Complete**    | High     | ✅  |
-| 🎨 Enhanced UI Details            | ✅ **Complete**    | Medium   | ✅  |
-| 🎤 Lyrics Fix                     | ✅ **Complete**    | Lowest   | ✅  |
-| 📥 Download System                | ✅ **Complete**    | High     | ✅  |
-| 🚦 Rate limiting system           | ✅ **Complete**    | High     | ✅  |
-| 🔌 IP Address Blocker             | ✅ **Complete**    | High     | ✅  |
-| 🔑 API Keys for projects          | 🟡 **Almost done** | Highest  | ⏳  |
-| 🎛️ A panel with comments          | 🔄 **Planned**     | Low      | TBD |
-| 📂 Bulk download playlist/urls    | 🔄 **Planned**     | Low      | TBD |
-| 📼 Add opus/webm/flac support     | 🔄 **Planned**     | Low      | TBD |
-| 🔍 Search for music               | 🔄 **Planned**     | Lowered  | TBD |
-| 🤖 Write scraper for Reddit       | 💤 **One day**     | Lowest   | TBD |
+| Feature                                                                              | Status             | Priority | ETA |
+| ------------------------------------------------------------------------------------ | ------------------ | -------- | --- |
+| 🎧 Spotify Integration                                                               | ✅ **Complete**    | High     | ✅  |
+| 📺 YouTube Integration                                                               | ✅ **Complete**    | High     | ✅  |
+| 🎶 YouTube Music Integration                                                         | ✅ **Complete**    | High     | ✅  |
+| 🎭 TikTok Integration                                                                | ✅ **Complete**    | High     | ✅  |
+| 🐦 Twitter Integration                                                               | ✅ **Complete**    | High     | ✅  |
+| 📷 Instagram Integration                                                             | ✅ **Complete**    | High     | ✅  |
+| ☁️ SoundCloud Integration                                                            | ✅ **Complete**    | High     | ✅  |
+| 📌 Pinterest Integration                                                             | ✅ **Complete**    | Medium   | ✅  |
+| 📁 Indirect Google Drive Download                                                    | ✅ **Complete**    | Low      | ✅  |
+| 🔧 FFmpeg Optimization                                                               | ✅ **Complete**    | High     | ✅  |
+| 📹 Full Quality Video Downloads                                                      | ✅ **Complete**    | Medium   | ✅  |
+| 🧹 Code Cleanup & UI Polish                                                          | ✅ **Complete**    | High     | ✅  |
+| 💻 Modern Frontend                                                                   | ✅ **Complete**    | High     | ✅  |
+| 🎨 Enhanced UI Details                                                               | ✅ **Complete**    | Medium   | ✅  |
+| 🎤 Lyrics Fix                                                                        | ✅ **Complete**    | Lowest   | ✅  |
+| 📥 Download System                                                                   | ✅ **Complete**    | High     | ✅  |
+| 🚦 Rate limiting system                                                              | ✅ **Complete**    | High     | ✅  |
+| 🔌 IP Address Blocker                                                                | ✅ **Complete**    | High     | ✅  |
+| 🤖 Write <a href="https://github.com/tanosshi/reddit-scraper">scraper</a> for Reddit | 🟡 **Almost done** | Highest  | TBD |
+| 🎛️ A panel with comments                                                             | 🔄 **Planned**     | Low      | TBD |
+| 📂 Bulk download playlist/urls                                                       | 🔄 **Planned**     | Low      | TBD |
+| 📼 Add opus/webm/flac support                                                        | 🔄 **Planned**     | Low      | TBD |
+| 🔍 Search for music                                                                  | 🔄 **Planned**     | Lowered  | TBD |
+| 🔑 API Keys for external projects                                                    | 🟡 **Almost done** | Lowered  | ⏳  |
 
 </div>
 
