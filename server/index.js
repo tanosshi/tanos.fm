@@ -133,14 +133,7 @@ const cleanupTempFiles = () => {
       files.forEach((file) => {
         if (tempFilePatterns.some((pattern) => pattern.test(file))) {
           const filePath = path.join(dir, file);
-          fs.unlink(filePath, (err) => {
-            if (err && err.code !== "ENOENT") {
-              console.error(
-                `Critical error deleting temp file ${filePath}:`,
-                err
-              );
-            }
-          });
+          fs.unlink(filePath, (err) => {});
         }
       });
     });

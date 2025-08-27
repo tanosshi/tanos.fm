@@ -6,11 +6,6 @@ _**tanos**'s **f**ree **m**edia is a quick yet ad-free media downloader, made fo
 
 <div align="center">
 
-![Version](https://img.shields.io/badge/version-1.4.6-blue.svg?cacheSeconds=2592000)
-![License](https://img.shields.io/badge/license-Educational-green.svg)
-![Node](https://img.shields.io/badge/node-%3E%3D16.0.0-brightgreen.svg)
-![Status](https://img.shields.io/badge/status-Active-success.svg)
-
 **🚀 A quick, ad-free media downloader built for educational exploration, supporting as many websites as possible**
 
 [🌐 Live Demo](https://tanos.is-a.dev/fm) • [📖 Documentation](#) • [💡 Request Feature](https://github.com/tanosshi/tanos.fm/issues)
@@ -28,7 +23,7 @@ _**tanos**'s **f**ree **m**edia is a quick yet ad-free media downloader, made fo
 
 ---
 
-## ✨ What Makes tanos.fm Special?
+## ✨ What compares us to others?
 
 <table>
 <tr>
@@ -41,16 +36,16 @@ Clean experience without interruptions
 </td>
 <td width="33%" align="center">
 
-### ⚡ **Lightning Fast**
+### ⚡ **Quickest**
 
-No bloat, direct downloads with optimized FFmpeg performance
+Direct download, quick FFmpeg performance
 
 </td>
 <td width="33%" align="center">
 
-### 🎯 **Multi-Platform**
+### 🎯 **Support**
 
-Supports all kinds of platforms, as listed below
+Most sites you can think of are available for download
 
 </td>
 </tr>
@@ -160,8 +155,6 @@ npm start
 | **twitter-downloader**    | 🐦 Twitter media extraction     |
 | **soundcloud-downloader** | 🎵 SoundCloud integration       |
 | **fluent-ffmpeg**         | 🎬 Media conversion engine      |
-
----
 
 ---
 

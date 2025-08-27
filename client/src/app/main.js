@@ -32,57 +32,6 @@ import {
 
 const customStyles = `
   <style>
-    @keyframes fadeInBg {
-      from {
-        opacity: 0;
-        backdrop-filter: blur(0px);
-      }
-      to {
-        opacity: 1;
-        backdrop-filter: blur(25px);
-      }
-    }
-    
-    @keyframes bounceIn {
-      0% {
-        opacity: 0;
-        transform: scale(0.3);
-      }
-      50% {
-        opacity: 1;
-        transform: scale(1.05);
-      }
-      70% {
-        transform: scale(0.9);
-      }
-      100% {
-        opacity: 1;
-        transform: scale(1);
-      }
-    }
-    
-    @keyframes popIn {
-      0% {
-        opacity: 0;
-        transform: scale(0.8) translateY(20px);
-      }
-      100% {
-        opacity: 1;
-        transform: scale(1) translateY(0);
-      }
-    }
-    
-    @keyframes floatUp {
-      0% {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-      100% {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-    
     @keyframes glowPulse {
       0%, 100% {
         filter: drop-shadow(0 0 8px var(--accent-color));
@@ -496,6 +445,7 @@ function App() {
                         onClick={() => {
                           setShowTerms(!showTerms);
                           setShowPrivacy(false);
+                          setShowSupported(false);
                         }}
                         className="text-gray-400 hover:text-gray-200 transition-colors text-sm cursor-pointer"
                       >
@@ -505,6 +455,7 @@ function App() {
                         onClick={() => {
                           setShowPrivacy(!showPrivacy);
                           setShowTerms(false);
+                          setShowSupported(false);
                         }}
                         className="text-gray-400 hover:text-gray-200 transition-colors text-sm cursor-pointer"
                       >

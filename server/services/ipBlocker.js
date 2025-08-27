@@ -32,7 +32,11 @@ function downloadIPList(url, dest) {
   });
 }
 
+var x = 0;
 async function loadBlockedIPs() {
+  if (x > 0) return;
+  x++;
+
   console.log(
     "First time loading after restart will take a couple seconds, please wait"
   );

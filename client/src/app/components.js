@@ -148,18 +148,12 @@ export const HeaderSection = ({
               onClick={() => setSelectedPlatformLocal("youtube")}
               className="flex items-center gap-2 p-3 bg-[#161616]/70 backdrop-blur-md rounded-lg border border-[#333333]/50 hover:border-[#444444]/70 transition-colors cursor-pointer hover:bg-[#161616]/80 relative"
             >
-              <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-green-500/20"></div>
               <span className="text-red-500 text-lg sm:text-xl">🎬</span>
               <div>
-                <p
-                  className="text-sm sm:text-base text-gray-200"
-                  style={{
-                    fontSize: "0.9rem",
-                  }}
-                >
+                <p className="text-sm textoninfo sm:text-base text-gray-200">
                   Youtube (+ music)
                 </p>
-                <p className="text-xs sm:text-sm text-gray-400">
+                <p className="text-xs texonsmaller sm:text-sm text-gray-400">
                   Videos & Premium Music
                 </p>
               </div>
@@ -168,72 +162,44 @@ export const HeaderSection = ({
               onClick={() => setSelectedPlatformLocal("soundcloud")}
               className="flex items-center gap-2 p-3 bg-[#161616]/70 backdrop-blur-md rounded-lg border border-[#333333]/50 hover:border-[#444444]/70 transition-colors cursor-pointer hover:bg-[#161616]/80 relative"
             >
-              <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-green-500/20"></div>
               <span className="text-xl">☁️</span>
               <div>
-                <p
-                  className="text-gray-200"
-                  style={{
-                    fontSize: "0.9rem",
-                  }}
-                >
-                  Soundcloud
-                </p>
-                <p className="text-xs text-gray-400">Tracks</p>
+                <p className="text-gray-200 textoninfo">Soundcloud</p>
+                <p className="text-xs texonsmaller text-gray-400">Tracks</p>
               </div>
             </div>
             <div
               onClick={() => setSelectedPlatformLocal("spotify")}
               className="flex items-center gap-2 p-3 bg-[#161616]/70 backdrop-blur-md rounded-lg border border-[#333333]/50 hover:border-[#444444]/70 transition-colors cursor-pointer hover:bg-[#161616]/80 relative"
             >
-              <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-green-500/20"></div>
               <span className="text-xl">💚</span>
               <div>
-                <p
-                  className="text-gray-200"
-                  style={{
-                    fontSize: "0.9rem",
-                  }}
-                >
-                  Spotify
-                </p>
-                <p className="text-xs text-gray-400">Songs only</p>
+                <p className="text-gray-200 textoninfo">Spotify</p>
+                <p className="text-xs texonsmaller text-gray-400">Songs only</p>
               </div>
             </div>
             <div
               onClick={() => setSelectedPlatformLocal("lyrics")}
               className="flex items-center gap-2 p-3 bg-[#161616]/70 backdrop-blur-md rounded-lg border border-[#333333]/50 hover:border-[#444444]/70 transition-colors cursor-pointer hover:bg-[#161616]/80 relative"
             >
-              <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-green-500/20"></div>
               <span className="text-xl">📝</span>
               <div>
-                <p
-                  className="text-gray-200"
-                  style={{
-                    fontSize: "0.9rem",
-                  }}
-                >
-                  Lyrics
-                </p>
-                <p className="text-xs text-gray-400">For music</p>
+                <p className="text-gray-200 textoninfo">Lyrics</p>
+                <p className="text-xs texonsmaller text-gray-400">For music</p>
               </div>
             </div>
             <div
               onClick={() => setSelectedPlatformLocal("social")}
               className="flex items-center gap-2 p-3 bg-[#161616]/70 backdrop-blur-md rounded-lg border border-[#333333]/50 hover:border-[#444444]/70 transition-colors cursor-pointer col-span-2 hover:bg-[#161616]/80 relative"
             >
-              <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-green-500/20"></div>
               <span className="text-xl">🌐</span>
               <div>
-                <p
-                  className="text-sm sm:text-base text-gray-200"
-                  style={{
-                    fontSize: "0.87rem",
-                  }}
-                >
+                <p className="text-sm sm:text-base text-gray-200 textoninfo">
                   Tiktok, Twitter, Pinterest & Instagram
                 </p>
-                <p className="text-xs text-gray-400">Entertainment</p>
+                <p className="text-xs texonsmaller text-gray-400">
+                  Entertainment
+                </p>
               </div>
             </div>
           </div>
@@ -286,10 +252,29 @@ export const HeaderSection = ({
             >
               <button
                 onClick={() => setSelectedPlatformLocal(null)}
-                style={{ fontSize: "1.1rem" }}
+                id="gobackfromplatformlist"
+                style={{
+                  display: selectedPlatform === "youtube" ? "none" : "block",
+                }}
                 className="w-full px-3 py-2 bg-[#161616]/70 backdrop-blur-md rounded-lg border border-[#333333]/50 hover:border-[#444444]/70 transition-colors cursor-pointer text-gray-200"
               >
                 Back to the supported platform list
+              </button>
+            </div>
+
+            <div
+              className="absolute top-0 right-0 w-auto"
+              style={{ margin: "10px", right: "4%", width: "10%" }}
+            >
+              <button
+                onClick={() => setSelectedPlatformLocal(null)}
+                style={{
+                  display: selectedPlatform === "youtube" ? "block" : "none",
+                }}
+                id="gobackfromplatmobile"
+                className="px-3 py-2 bg-[#161616]/70 backdrop-blur-md rounded-lg border border-[#333333]/50 hover:border-[#444444]/70 transition-colors cursor-pointer text-gray-200"
+              >
+                ←
               </button>
             </div>
           </div>
