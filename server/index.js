@@ -107,8 +107,9 @@ app.use(rateLimiter);
 const cleanupTempFiles = () => {
   const tempFilePatterns = [
     /^temp_cover_.*\.png$/,
-    /^temp_output.*$/,
+    /^temp_*\.*$/,
     /^temp_.*\.mp3$/,
+    /^temp_.*\.[a-zA-Z0-9]+$/,
   ];
 
   const dirsToCheck = [

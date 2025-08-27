@@ -3,6 +3,7 @@
  * TODO: Add option to download anything other than mp4 or mp3, e.g. FLAC, webm or similar.
  * TODO: Google Drive direct download support (download to server then send to user)
  * TODO: Support Bandcamp downloads
+ * TODO: Fix title/album/artist metadata **((UsE LASTFM API.))
  */
 
 const express = require("express");
@@ -667,7 +668,7 @@ router.get("/", async (req, res) => {
         const randomFileName = `temp_pin_${crypto
           .randomBytes(8)
           .toString("hex")}${ext}`;
-        const tempFilePath = path.join(__dirname, randomFileName);
+        const tempFilePath = path.join(__dirname + "/../temp/", randomFileName);
         tempFiles.add({ path: tempFilePath, timestamp: Date.now() });
 
         const writer = fs.createWriteStream(tempFilePath);

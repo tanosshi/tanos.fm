@@ -13,7 +13,7 @@ _**tanos**'s **f**ree **m**edia is a quick yet ad-free media downloader, made fo
 
 **🚀 A quick, ad-free media downloader built for educational exploration, supporting as many websites as possible**
 
-[🌐 Live Demo](https://moonlit-malasada-a5e63c.netlify.app/) • [📖 Documentation](#) • [💡 Request Feature](https://github.com/tanosshi/tanos.fm/issues)
+[🌐 Live Demo](https://tanos.is-a.dev/fm) • [📖 Documentation](#) • [💡 Request Feature](https://github.com/tanosshi/tanos.fm/issues)
 
 </div>
 
@@ -106,6 +106,7 @@ npm start
 | 🔌 IP Address Blocker             | ✅ **Complete**    | High     | ✅  |
 | 🔑 API Keys for projects          | 🟡 **Almost done** | Highest  | ⏳  |
 | 🎛️ A panel with comments          | 🔄 **Planned**     | Low      | TBD |
+| 📂 Bulk download playlist/urls    | 🔄 **Planned**     | Low      | TBD |
 | 📼 Add opus/webm/flac support     | 🔄 **Planned**     | Low      | TBD |
 | 🔍 Search for music               | 🔄 **Planned**     | Lowered  | TBD |
 | 🤖 Write scraper for Reddit       | 💤 **One day**     | Lowest   | TBD |
@@ -190,7 +191,7 @@ If you found the project somewhat interesting, dont be shy to:
 
 ### 🚀 Want to get started?
 
-**[Try the Demo (Front-end only)](https://moonlit-malasada-a5e63c.netlify.app/)** | **[View Source](#)** | **[Contribute](#)**
+**[Try the Demo (Front-end only)](https://tanos.is-a.dev/fm)** | **[View Source](#)** | **[Contribute](#)**
 
 ---
 

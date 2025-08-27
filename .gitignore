@@ -1,3 +1,5 @@
+server/functions/history.json
+
 # Node Modules
 /node_modules
 /server/node_modules
@@ -8,12 +10,11 @@ client/src/ol.app.js
 # Enviroment Variables
 /client/.env
 /server/.env
-/client/build
-*.bak
 .env
 *env*
-/tmp
-*\history.json
+
+# Temporary Files
+/client/build
 *temp_*.*
 ip-list.txt
-server/functions/history.json
+*.bak
