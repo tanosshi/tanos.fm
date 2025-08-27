@@ -1,6 +1,8 @@
 /** @file download.js
  * @description Handles downloading media files from various sources.
  * TODO: Add option to download anything other than mp4 or mp3, e.g. FLAC, webm or similar.
+ * TODO: Google Drive direct download support (download to server then send to user)
+ * TODO: Support Bandcamp downloads
  */
 
 const express = require("express");
@@ -75,12 +77,14 @@ router.get("/", async (req, res) => {
     });
   }
 
-  if (!format || !["mp3", "mp4"].includes(format)) {
+  if (!format || !["mp3", "mp4", "alt"].includes(format)) {
     return res.status(400).json({
       valid: false,
       message: "Invalid format. Must be 'mp3' or 'mp4'.",
     });
   }
+
+  console.log(url);
 
   const fileHostingServices = [
     "mega",
@@ -110,6 +114,10 @@ router.get("/", async (req, res) => {
   }
 
   try {
+    const isFromSpotify = url.includes("#from_spotify");
+    const isFromSoundCloud = url.includes("soundcloud.com");
+
+    // YouTube
     if (url.includes("youtube.com") || url.includes("youtu.be")) {
       try {
         if (!ytdl.validateURL(url)) {
@@ -122,18 +130,30 @@ router.get("/", async (req, res) => {
         const info = await ytdl.getInfo(ytdl.getURLVideoID(url));
         const videoTitle = sanitizeFilename(info.videoDetails.title);
 
+        // (gonna comment for my own sake and easier reading)
+
+        // The MP3 part
         if (format === "mp3") {
+          // Grab info about the __VIDEO__ first
           const info = await ytdl.getInfo(ytdl.getVideoID(url));
+
+          // Grab video title (This'll be replaced by Last.fm/Spotify if available)
           const videoTitle = sanitizeFilename(info.videoDetails.title);
+
+          // Grab author for metadata, saves a partial search on Last.fm (i guess)
           const author = sanitizeFilename(
             info.videoDetails.author?.name || "Unknown_Artist"
           );
 
+          // log for myself
           console.log(`Downloading MP3: ${videoTitle} by ${author}`);
 
+          // Set variables
           let artworkFailed = false;
           let imageBuffer = null;
           let genre = null;
+
+          // Attempt to grab album cover
           try {
             const lastFMData = await getAlbumCoverFromLastFM(
               author,
@@ -148,7 +168,8 @@ router.get("/", async (req, res) => {
             artworkFailed = true;
           }
 
-          if (!imageBuffer && !artworkFailed) {
+          // Second attempt to grab album cover
+          if (!imageBuffer && artworkFailed) {
             try {
               console.log(
                 "No album data found on Last.fm, trying SoundCloud..."
@@ -167,6 +188,7 @@ router.get("/", async (req, res) => {
             }
           }
 
+          // Set headers for early ffmpeg output
           const safeFilename = `${videoTitle}.mp3`;
           res.setHeader(
             "Content-Disposition",
@@ -176,17 +198,21 @@ router.get("/", async (req, res) => {
 
           const audioStream = ytdl(url, ytdlOptions);
 
+          // Download for conversion
           audioStream.on("error", (error) => {
             console.error("YouTube stream error:", error);
             if (!res.headersSent) {
               res.status(500).json({
                 valid: false,
-                message: "Error streaming YouTube audio",
-                error: error.message,
+                message: "Download error on server side",
+                error: "BFR_FMPG:" + error.message,
               });
             }
           });
 
+          // !!!!! FFMPEg here !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+          // Turn into MP3 (future will be others like webm, flac, etc)
           const ffmpegCommand = ffmpeg(audioStream)
             .audioCodec("libmp3lame")
             .audioBitrate("320k")
@@ -206,7 +232,7 @@ router.get("/", async (req, res) => {
               }
             });
 
-          // go go go
+          // change things that might interfere
           const escapeMetadata = (str) => {
             let value = String(str || "");
             value = value.replace(/^[-\s]+/, "");
@@ -218,7 +244,9 @@ router.get("/", async (req, res) => {
               .trim();
           };
 
+          // Artwork-less output
           if (!imageBuffer || artworkFailed) {
+            // Create options
             ffmpegCommand.outputOptions([
               "-metadata",
               `title=${escapeMetadata(videoTitle)}`,
@@ -230,6 +258,7 @@ router.get("/", async (req, res) => {
               "comment=Downloaded via tanos.fm - No Artwork",
             ]);
 
+            // Generate temp-file name
             const randomFileNameNoArt = crypto.randomBytes(16).toString("hex");
             const tempOutputPathNoArt = path.join(
               __dirname,
@@ -237,6 +266,7 @@ router.get("/", async (req, res) => {
             );
             tempFiles.add({ path: tempOutputPathNoArt, timestamp: Date.now() });
 
+            // Start conversion
             ffmpegCommand
               .on("start", (cmd) => {
                 console.log("FFmpeg (no artwork) started");
@@ -275,16 +305,20 @@ router.get("/", async (req, res) => {
 
             return;
           }
+
+          // Artwork-full output
           try {
+            // Create proper buffer
             let pngBuffer;
             try {
               pngBuffer = await sharp(imageBuffer).png().toBuffer();
             } catch (e) {
-              pngBuffer = null;
+              pngBuffer = imageBuffer;
             }
-            if (!pngBuffer) pngBuffer = imageBuffer;
 
             console.log("Sharp processing complete.");
+
+            // Random file name
             const randomFileName = crypto.randomBytes(16).toString("hex");
             const tempImagePath = path.join(
               __dirname,
@@ -302,6 +336,7 @@ router.get("/", async (req, res) => {
             fs.writeFileSync(tempImagePath, pngBuffer);
             console.log("Temp image written.");
 
+            // FFmpeg part with artwork...................
             ffmpeg()
               .input(audioStream)
               .input(tempImagePath)
@@ -320,7 +355,7 @@ router.get("/", async (req, res) => {
               .addOutputOption("-metadata", `artist=${escapeMetadata(author)}`)
               .addOutputOption(
                 "-metadata",
-                `album=${escapeMetadata(`${videoTitle} - ${author}`)}`
+                `album=${escapeMetadata(`${videoTitle}`)}`
               )
               .addOutputOption("-metadata", `genre=${genre || "Unknown"}`)
               .toFormat("mp3")
@@ -366,10 +401,12 @@ router.get("/", async (req, res) => {
               })
               .saveToFile(tempOutputPath);
           } catch (error) {
+            // As a fallback, save the converted audio to a temp file and stream
+            // it. This avoids piping to stdout which can fail on Windows
+            // (as long as it works, if i find another error ill add another fallb.).
+
             console.error("Error processing artwork:", error);
 
-            // As a fallback, save the converted audio to a temp file and stream
-            // it. This avoids piping to stdout which can fail on Windows.
             const randomFileNameFb = crypto.randomBytes(16).toString("hex");
             const tempOutputPathFb = path.join(
               __dirname,
@@ -425,7 +462,10 @@ router.get("/", async (req, res) => {
               })
               .saveToFile(tempOutputPathFb);
 
-            return;
+            return res.status(500).json({
+              valid: false,
+              message: "Ended abruptly, try again if no download has started.",
+            });
           }
         } else if (format === "mp4") {
           console.log("Downloading MP4 from YouTube");
@@ -475,14 +515,7 @@ router.get("/", async (req, res) => {
       return;
     }
 
-    const isFromSpotify = url.includes("#from_spotify");
-    const isFromSoundCloud = url.includes("soundcloud.com");
-
-    if (isFromSpotify) {
-      url = url.replace("#from_spotify", "");
-      format = "mp3";
-    }
-
+    // SoundCloud (should have cover already)
     if (isFromSoundCloud) {
       format = "mp3";
       const info = await scdl.getInfo(url, SOUNDCLOUD_CLIENT_ID);
@@ -497,6 +530,7 @@ router.get("/", async (req, res) => {
       return;
     }
 
+    // Tiktok, instagram or any cdn related to it
     if (
       url.includes("tiktok.com") ||
       url.includes("tiktokcdn.com") ||
@@ -527,6 +561,7 @@ router.get("/", async (req, res) => {
       return;
     }
 
+    // Twitter
     if (url.includes("twitter.com") || url.includes("x.com")) {
       const result = await TwitterDL(url);
       let highestQualityMedia;
@@ -577,6 +612,13 @@ router.get("/", async (req, res) => {
       return;
     }
 
+    // Spotify beforehand
+    if (isFromSpotify) {
+      url = url.replace("#from_spotify", "");
+      format = "mp3";
+    }
+
+    // Spotify
     if (url.includes("spotify.com")) {
       const trackIdMatch = url.match(/track\/([a-zA-Z0-9]+)/);
       if (!trackIdMatch || !trackIdMatch[1]) {
@@ -597,6 +639,64 @@ router.get("/", async (req, res) => {
       url = spotifyInfo.url.replace("#from_spotify", "");
     }
 
+    if (
+      url.includes("pin.") ||
+      url.includes("pinterest.") ||
+      url.includes("pinimg.") ||
+      url.includes("i.pin")
+    ) {
+      try {
+        const response = await axios({
+          method: "get",
+          url,
+          responseType: "stream",
+        });
+
+        const ext = (() => {
+          const urlPath = new URL(url).pathname;
+          const extMatch = urlPath.match(/\.(\w{2,5})(?:$|\?)/);
+          if (extMatch) return `.${extMatch[1]}`;
+          const contentType = response.headers["content-type"] || "";
+          if (contentType.includes("image/jpeg")) return ".jpg";
+          if (contentType.includes("image/png")) return ".png";
+          if (contentType.includes("image/gif")) return ".gif";
+          if (contentType.includes("video/mp4")) return ".mp4";
+          return "";
+        })();
+
+        const randomFileName = `temp_pin_${crypto
+          .randomBytes(8)
+          .toString("hex")}${ext}`;
+        const tempFilePath = path.join(__dirname, randomFileName);
+        tempFiles.add({ path: tempFilePath, timestamp: Date.now() });
+
+        const writer = fs.createWriteStream(tempFilePath);
+        response.data.pipe(writer);
+
+        const num = Math.floor(Math.random() * 1000000000) + 1;
+
+        writer.on("finish", () => {
+          res.setHeader(
+            "Content-Disposition",
+            `attachment; filename="pin${num}${ext}"`
+          );
+          res.setHeader(
+            "Content-Type",
+            response.headers["content-type"] || "application/octet-stream"
+          );
+          const readStream = fs.createReadStream(tempFilePath);
+          readStream.pipe(res);
+        });
+      } catch (error) {
+        console.error("Error downloading Pinterest media:", error);
+        res.status(500).json({
+          valid: false,
+          message: "Sending you to alternative download, " + error,
+        });
+      }
+    }
+
+    // Anything else
     try {
       const response = await axios({
         method: "get",
@@ -610,8 +710,11 @@ router.get("/", async (req, res) => {
         ext = `.${extMatch[1]}`;
       } else {
         const contentType = response.headers["content-type"] || "";
-        if (contentType.includes("video")) ext = ".gif";
-        else if (contentType.includes("image")) ext = ".png";
+
+        if (contentType.includes("image/jpeg")) ext = ".jpg";
+        else if (contentType.includes("image/png")) ext = ".png";
+        else if (contentType.includes("image/gif")) ext = ".gif";
+        else if (contentType.includes("video/mp4")) ext = ".mp4";
         else ext = "";
       }
 

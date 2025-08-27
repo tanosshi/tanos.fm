@@ -565,7 +565,9 @@ export const DownloadPanel = ({
               <button
                 className="mt-2 px-6 py-2 rounded-lg border transition-all duration-200 flex items-center justify-center gap-2 text-white bg-[#c8232c] hover:bg-[#b21d24] border-[#c8232c] shadow-md"
                 style={{ fontWeight: 600, cursor: "pointer" }}
-                onClick={() => window.open(mediaInfo.url, "_blank")}
+                onClick={() =>
+                  handleDownload("mp3", mediaInfo, setNotification)
+                }
               >
                 <span style={{ fontSize: "1.2em" }}>📥</span> Download Pin
               </button>

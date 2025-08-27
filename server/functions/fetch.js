@@ -31,6 +31,8 @@ function isValidUrl(url) {
       "pinit.com",
       "pinterest.com",
       "pinterest.c",
+      "pinimg.",
+      "i.pin",
       "drive.google.com",
       "drive.google",
       "twitter.com",
