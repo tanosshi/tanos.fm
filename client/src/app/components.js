@@ -225,7 +225,7 @@ export const HeaderSection = ({
               <span className="text-xl">🌐</span>
               <div>
                 <p className="text-sm sm:text-base text-gray-200 textoninfo">
-                  Tiktok, Twitter, Pinterest & Instagram
+                  Tiktok, Twitter, Pinterest, Reddit & Instagram (etc.)
                 </p>
                 <p className="text-xs texonsmaller text-gray-400">
                   Entertainment
@@ -273,7 +273,7 @@ export const HeaderSection = ({
                 {selectedPlatform === "lyrics" &&
                   "Lyrics are grabbed using LrcLib, QQ Music, and NetEase."}
                 {selectedPlatform === "social" &&
-                  "We use ruhend-scraper and btch-downloader for downloading media."}
+                  "We use ruhend-scraper, @tanosshi/reddit-scraper and btch-downloader for downloading media."}
               </p>
             </div>
             <div
@@ -596,7 +596,11 @@ export const DownloadPanel = ({
           </>
         ) : mediaInfo.isTwitter ? (
           <>
-            <div className="flex items-center gap-3 bg-[#161616]/70 backdrop-blur-md p-3 rounded-lg border border-[#333333]/50">
+            {/* so sorry for making this code ugly lmaoooooo */}
+            <div
+              className="flex items-center gap-3 bg-[#161616]/70 backdrop-blur-md p-3 rounded-lg border border-[#333333]/50"
+              style={{ display: mediaInfo?.isAlternatedTwt ? "none" : "flex" }}
+            >
               <img
                 src={
                   mediaInfo.profilePicture ||
@@ -618,63 +622,210 @@ export const DownloadPanel = ({
               </div>
             </div>
             <div className="bg-[#161616]/70 backdrop-blur-md p-3 rounded-lg border border-[#333333]/50">
-              <p className="text-gray-400 text-sm">Tweet</p>
+              <p className="text-gray-400 text-sm">
+                {mediaInfo?.isAlternatedTwt ? "Title" : "Tweet"}
+              </p>
               <p className="text-gray-200">
                 {mediaInfo.title || "Twitter Media"}
               </p>
             </div>
-            <div className="grid grid-cols-4 gap-3">
+            <div
+              className={`grid ${
+                mediaInfo?.isAlternatedTwt ? "grid-cols-2" : "grid-cols-4"
+              } gap-3`}
+            >
               <div className="bg-[#161616]/70 backdrop-blur-md p-3 rounded-lg border border-[#333333]/50">
-                <p className="text-gray-400 text-sm">Likes</p>
-                <p className="text-gray-200">{mediaInfo.likes || "0"}</p>
+                <p className="text-gray-400 text-sm">
+                  {mediaInfo?.isAlternatedTwt ? "Description" : "Likes"}
+                </p>
+                {mediaInfo?.isAlternatedTwt && mediaInfo?.description ? (
+                  <p className="text-gray-200">{mediaInfo.description}</p>
+                ) : (
+                  <p className="text-gray-200">{mediaInfo.likes || "0"}</p>
+                )}
               </div>
-              <div className="bg-[#161616]/70 backdrop-blur-md p-3 rounded-lg border border-[#333333]/50">
+              <div
+                className="bg-[#161616]/70 backdrop-blur-md p-3 rounded-lg border border-[#333333]/50"
+                style={{
+                  display: mediaInfo?.isAlternatedTwt ? "none" : "block",
+                }}
+              >
                 <p className="text-gray-400 text-sm">Retweets</p>
                 <p className="text-gray-200">{mediaInfo.retweets || "0"}</p>
               </div>
-              <div className="bg-[#161616]/70 backdrop-blur-md p-3 rounded-lg border border-[#333333]/50">
+              <div
+                className="bg-[#161616]/70 backdrop-blur-md p-3 rounded-lg border border-[#333333]/50"
+                style={{
+                  display: mediaInfo?.isAlternatedTwt ? "none" : "block",
+                }}
+              >
                 <p className="text-gray-400 text-sm">Views</p>
                 <p className="text-gray-200">{mediaInfo.views || "0"}</p>
               </div>
-              <button
-                className="bg-[#161616]/70 backdrop-blur-md p-3 rounded-lg border border-[#333333]/50 hover:bg-[#161616] transition-all duration-200 flex flex-col items-center cursor-pointer justify-center"
-                onClick={() =>
-                  handleDownload("mp4", mediaInfo, setNotification)
-                }
-                disabled={downloading.mp4}
-                style={{
-                  backgroundColor: `${currentTheme.accent}33`,
-                  borderColor: `${currentTheme.accent}66`,
-                }}
-              >
-                {downloading.mp4 ? (
-                  <svg
-                    className="animate-spin h-5 w-5 text-white"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
+
+              {mediaInfo?.isAlternatedTwt && mediaInfo?.description ? (
+                <>
+                  <button
+                    className="bg-[#161616]/70 backdrop-blur-md p-3 rounded-lg border border-[#333333]/50 hover:bg-[#161616] transition-all duration-200 flex flex-col items-center cursor-pointer justify-center"
+                    onClick={() =>
+                      handleDownload("mp4", mediaInfo, setNotification)
+                    }
+                    disabled={downloading.mp4}
+                    style={{
+                      backgroundColor: `${currentTheme.accent}33`,
+                      borderColor: `${currentTheme.accent}66`,
+                    }}
                   >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    ></circle>
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                    ></path>
-                  </svg>
-                ) : (
-                  <>
-                    <p className="text-gray-400 text-sm">Download</p>
-                    <p className="text-gray-200 text-sm">Media 🎥</p>
-                  </>
-                )}
-              </button>
+                    {downloading.mp4 ? (
+                      <svg
+                        className="animate-spin h-5 w-5 text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                        ></path>
+                      </svg>
+                    ) : (
+                      <>
+                        <p className="text-gray-400 text-sm">Download</p>
+                        <p className="text-gray-200 text-sm">Media 🎥</p>
+                      </>
+                    )}
+                  </button>
+                  <button
+                    className="bg-[#161616]/70 backdrop-blur-md p-3 rounded-lg border border-[#333333]/50 hover:bg-[#161616] transition-all duration-200 flex flex-col items-center cursor-pointer justify-center"
+                    onClick={() =>
+                      handleDownload("full", mediaInfo, setNotification)
+                    }
+                    disabled={downloading.full}
+                    style={{
+                      backgroundColor: `${currentTheme.accent}33`,
+                      borderColor: `${currentTheme.accent}66`,
+                    }}
+                  >
+                    {downloading.full ? (
+                      <svg
+                        className="animate-spin h-5 w-5 text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                        ></path>
+                      </svg>
+                    ) : (
+                      <>
+                        <p className="text-gray-400 text-sm">Download zip</p>
+                        <p className="text-gray-200 text-sm">Full Content 📄</p>
+                      </>
+                    )}
+                  </button>
+                  <button
+                    className="bg-[#161616]/70 backdrop-blur-md p-3 rounded-lg border border-[#333333]/50 hover:bg-[#161616] transition-all duration-200 flex flex-col items-center cursor-pointer justify-center"
+                    onClick={() =>
+                      handleDownload("txt", mediaInfo, setNotification)
+                    }
+                    disabled={downloading.full}
+                    style={{
+                      backgroundColor: `${currentTheme.accent}33`,
+                      borderColor: `${currentTheme.accent}66`,
+                    }}
+                  >
+                    {downloading.full ? (
+                      <svg
+                        className="animate-spin h-5 w-5 text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                        ></path>
+                      </svg>
+                    ) : (
+                      <>
+                        <p className="text-gray-400 text-sm">Download txt</p>
+                        <p className="text-gray-200 text-sm">
+                          Comments only 📄
+                        </p>
+                      </>
+                    )}
+                  </button>
+                </>
+              ) : (
+                <button
+                  className="bg-[#161616]/70 backdrop-blur-md p-3 rounded-lg border border-[#333333]/50 hover:bg-[#161616] transition-all duration-200 flex flex-col items-center cursor-pointer justify-center"
+                  onClick={() =>
+                    handleDownload("mp4", mediaInfo, setNotification)
+                  }
+                  disabled={downloading.mp4}
+                  style={{
+                    backgroundColor: `${currentTheme.accent}33`,
+                    borderColor: `${currentTheme.accent}66`,
+                  }}
+                >
+                  {downloading.mp4 ? (
+                    <svg
+                      className="animate-spin h-5 w-5 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                      ></path>
+                    </svg>
+                  ) : (
+                    <>
+                      <p className="text-gray-400 text-sm">Download</p>
+                      <p className="text-gray-200 text-sm">Media 🎥</p>
+                    </>
+                  )}
+                </button>
+              )}
             </div>
           </>
         ) : mediaInfo.isSmallData ? (
@@ -759,7 +910,10 @@ export const DownloadPanel = ({
                 {mediaInfo.title}
               </p>
             </div>
-            <div className="grid grid-cols-3 gap-3">
+            <div
+              className="grid grid-cols-3 gap-3"
+              style={{ display: mediaInfo?.isEMedia ? "none" : "block" }}
+            >
               <div className="bg-[#161616]/70 backdrop-blur-md p-3 rounded-lg border border-[#333333]/50">
                 <p className="text-gray-400 text-sm">Duration</p>
                 <p
@@ -802,7 +956,9 @@ export const DownloadPanel = ({
             !mediaInfo.isTwitter &&
             !mediaInfo.isSmallData &&
             !mediaInfo.isPinterest &&
-            (mediaInfo.isTikTok || !mediaInfo.isFromSpotify) && (
+            (mediaInfo.isTikTok ||
+              mediaInfo.isEMedia ||
+              !mediaInfo.isFromSpotify) && (
               <button
                 className={`flex-1 px-4 py-2 backdrop-blur-lg text-gray-200 rounded-lg border transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer ${
                   mediaInfo.isFromSpotify || mediaInfo.isFromSoundCloud

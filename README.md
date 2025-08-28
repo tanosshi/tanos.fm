@@ -99,7 +99,7 @@ npm start
 | 📥 Download System                                                                   | ✅ **Complete**    | High     | ✅  |
 | 🚦 Rate limiting system                                                              | ✅ **Complete**    | High     | ✅  |
 | 🔌 IP Address Blocker                                                                | ✅ **Complete**    | High     | ✅  |
-| 🤖 Write <a href="https://github.com/tanosshi/reddit-scraper">scraper</a> for Reddit | 🟡 **Almost done** | Highest  | TBD |
+| 🤖 Write <a href="https://github.com/tanosshi/reddit-scraper">scraper for Reddit</a> | ✅ **Completed**   | Highest  | ✅  |
 | 🎛️ A panel with comments                                                             | 🔄 **Planned**     | Low      | TBD |
 | 📂 Bulk download playlist/urls                                                       | 🔄 **Planned**     | Low      | TBD |
 | 📼 Add opus/webm/flac support                                                        | 🔄 **Planned**     | Low      | TBD |

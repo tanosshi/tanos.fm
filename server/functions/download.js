@@ -11,12 +11,14 @@ const router = express.Router();
 const scdl = require("soundcloud-downloader").default;
 const ytdl = require("@distube/ytdl-core");
 const { TwitterDL } = require("twitter-downloader");
+const redditscraper = require("@tanosshi/reddit-scraper");
 const { Readable } = require("stream");
 const axios = require("axios");
 const fs = require("fs");
 const path = require("path");
 const sharp = require("sharp");
 const crypto = require("crypto");
+const archiver = require("archiver");
 const getSpotifyAccessToken = require("../services/info/getSpotifyAccessToken.js");
 const getSpotifyInfo = require("../services/info/getSpotifyInfo.js");
 
@@ -30,6 +32,9 @@ const tempFiles = new Set();
 
 const Converter = require("ascii-fullwidth-halfwidth-convert");
 const conv = new Converter();
+
+let currentDir = __dirname;
+let parentOfServer = null;
 
 const sanitizeFilename = (filename) => {
   if (!filename) return "untitled";
@@ -78,10 +83,13 @@ router.get("/", async (req, res) => {
     });
   }
 
-  if (!format || !["mp3", "mp4", "alt"].includes(format)) {
+  if (
+    !format ||
+    !["mp3", "mp4", "alt", "txt", "full", "zip"].includes(format)
+  ) {
     return res.status(400).json({
       valid: false,
-      message: "Invalid format. Must be 'mp3' or 'mp4'.",
+      message: "Invalid format.",
     });
   }
 
@@ -99,6 +107,127 @@ router.get("/", async (req, res) => {
     return res.redirect(url);
   }
 
+  if (url.includes(".redd")) {
+    if (format == "mp4") {
+      const result = await redditscraper.download(url, {
+        outDir: "server/temp/",
+      });
+
+      if (result) {
+        try {
+          const file = fs.createReadStream(result);
+          const filename = sanitizeFilename(result.split("\\").pop());
+          res.setHeader(
+            "Content-Disposition",
+            `attachment; filename="${filename}"`
+          );
+          file.pipe(res);
+          return;
+        } catch {
+          while (currentDir !== path.parse(currentDir).root) {
+            const possible = path.join(currentDir, "server");
+            if (
+              fs.existsSync(possible) &&
+              fs.lstatSync(possible).isDirectory()
+            ) {
+              parentOfServer = currentDir;
+              break;
+            }
+            currentDir = path.dirname(currentDir);
+          }
+
+          const file = fs.createReadStream(parentOfServer + "\\" + result);
+          const filename = sanitizeFilename(result.split("\\").pop());
+          res.setHeader(
+            "Content-Disposition",
+            `attachment; filename="${filename}"`
+          );
+          file.pipe(res);
+          return;
+        }
+      } else {
+        res.status(500).json({
+          valid: false,
+          message: "Failed to download Reddit media",
+        });
+        return;
+      }
+      return;
+    } else if (format == "txt") {
+      const result = await redditscraper.scrape(url, {
+        outDir: "server/temp/",
+        mode: "comments",
+      });
+      const file = fs.createReadStream(result.commentsPath);
+      const filename = sanitizeFilename(result.commentsPath.split("\\").pop());
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${filename}"`
+      );
+      file.pipe(res);
+      return;
+    } else if (format == "zip" || format == "full") {
+      const result = await redditscraper.scrape(url, {
+        outDir: "server/temp/",
+        mode: "all",
+      });
+
+      const filename = sanitizeFilename(
+        result.commentsPath
+          .split("\\")
+          .pop()
+          .replace("_comments.txt", "")
+          .replace(".comments.txt", "")
+      );
+      const zipFilename = `${filename}.zip`;
+
+      /*const file = fs.createReadStream(result.commentsPath);
+      const filename = sanitizeFilename(result.commentsPath.split("\\").pop());*/
+
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${zipFilename}"`
+      );
+      res.setHeader("Content-Type", "application/zip");
+
+      const archive = archiver("zip", {
+        zlib: { level: 9 },
+      });
+
+      archive.on("error", (err) => {
+        console.error("Archiver error:", err);
+        if (!res.headersSent) {
+          res.status(500).json({
+            valid: false,
+            message: "Failed to create ZIP archive",
+            error: err.message,
+          });
+        }
+      });
+
+      archive.pipe(res);
+
+      // result.imagePath result.commentsPath result.textPath should be all i added in the api
+      if (result.imagePath && fs.existsSync(result.imagePath)) {
+        archive.file(result.imagePath, {
+          name: path.basename(result.imagePath),
+        });
+      }
+      if (result.commentsPath && fs.existsSync(result.commentsPath)) {
+        archive.file(result.commentsPath, {
+          name: path.basename(result.commentsPath),
+        });
+      }
+      if (result.textPath && fs.existsSync(result.textPath)) {
+        archive.file(result.textPath, { name: path.basename(result.textPath) });
+      }
+
+      archive.finalize();
+      return;
+    }
+    return;
+  }
+
   if (
     url.includes("instagram.com") ||
     url.includes("rapidcdn") ||
@@ -106,14 +235,6 @@ router.get("/", async (req, res) => {
   ) {
     url = url + "#format=mp4";
   }
-
-  if (!format || !["mp3", "mp4"].includes(format)) {
-    return res.status(400).json({
-      valid: false,
-      message: "Invalid format. Must be mp3 or mp4.",
-    });
-  }
-
   try {
     const isFromSpotify = url.includes("#from_spotify");
     const isFromSoundCloud = url.includes("soundcloud.com");
@@ -567,7 +688,6 @@ router.get("/", async (req, res) => {
       const result = await TwitterDL(url);
       let highestQualityMedia;
       let isTwtImage = false;
-      console.log(result.result.media[0]);
       try {
         if (
           result.result.media &&
@@ -688,12 +808,14 @@ router.get("/", async (req, res) => {
           const readStream = fs.createReadStream(tempFilePath);
           readStream.pipe(res);
         });
+        return;
       } catch (error) {
         console.error("Error downloading Pinterest media:", error);
         res.status(500).json({
           valid: false,
           message: "Sending you to alternative download, " + error,
         });
+        return;
       }
     }
 
@@ -721,6 +843,9 @@ router.get("/", async (req, res) => {
 
       const contentType =
         response.headers["content-type"] || "application/octet-stream";
+      if (res.headersSent) {
+        return;
+      }
       res.setHeader(
         "Content-Disposition",
         `attachment; filename="download${ext}"`

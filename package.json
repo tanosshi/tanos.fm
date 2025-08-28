@@ -13,6 +13,8 @@
     "build": "cd client && npm run build"
   },
   "dependencies": {
+    "@tanosshi/reddit-scraper": "^1.0.0",
+    "archiver": "^7.0.1",
     "ascii-fullwidth-halfwidth-convert": "^0.1.1",
     "axios": "^1.8.3",
     "btch-downloader": "^4.1.21",

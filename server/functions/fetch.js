@@ -7,6 +7,7 @@ const getSpotifyAccessToken = require("../services/info/getSpotifyAccessToken.js
 const getSoundCloudInfo = require("../services/info/getSoundCloudInfo.js");
 
 const btch = require("btch-downloader");
+const redditscraper = require("@tanosshi/reddit-scraper");
 
 const fs = require("fs");
 const path = require("path");
@@ -38,6 +39,10 @@ function isValidUrl(url) {
       "twitter.com",
       "x.com",
       "fxtwitter.com",
+      "reddit.com",
+      ".reddit.",
+      "reddi.t",
+      "redd.it",
     ];
     const hostname = new URL(url).hostname;
     return supportedDomains.some((domain) => hostname.includes(domain));
@@ -79,7 +84,9 @@ function logToHistory(requestData) {
 
 async function processFetch(req, res) {
   const { url, apiKey } = req.body;
-  switch (true) {
+  switch (
+    true // remains a demo for now
+  ) {
     case url.includes("nsfw_content"):
       return res.status(400).json({
         valid: false,
@@ -271,6 +278,22 @@ async function processFetch(req, res) {
           message: "Downloading NSFW media is not allowed for free users.",
         });
       }
+    } else if (url.includes("reddit.com") || url.includes(".redd")) {
+      logData.mediaType = "reddit";
+      const res = await redditscraper.scrape(url, {
+        outDir: "server/temp/",
+        mode: "text",
+      });
+      mediaInfo = {
+        title: res.title || "(no title provided)",
+        description:
+          res.selftext && res.selftext.length > 20
+            ? res.selftext.slice(0, 20) + "..."
+            : res.selftext || "(no description provided)",
+        url: url,
+        isTwitter: true,
+        isAlternatedTwt: true,
+      };
     }
 
     logData.success = true;

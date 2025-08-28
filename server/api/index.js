@@ -41,7 +41,10 @@ router.get("/", async (req, res) => {
     });
   }
 
-  if (format !== "mp3" && format !== "mp4") {
+  if (
+    !format ||
+    !["mp3", "mp4", "alt", "txt", "full", "zip"].includes(format)
+  ) {
     return res.status(400).json({
       valid: false,
       message: "Invalid format. Supported formats are mp3 and mp4.",
@@ -96,8 +99,11 @@ router.get("/", async (req, res) => {
     download_url: response.mediaInfo?.downloadUrl || null,
     backup_download_url: response.mediaInfo.format?.url || null,
     size: response.mediaInfo?.size || null,
+    selftext: response.mediaInfo?.selftext || null,
+    title: response.mediaInfo?.title || null,
+    imageurl: response.mediaInfo?.imageUrl || null,
     lyrics: response.mediaInfo?.download_lrc_file || null,
-    note: "Most sources should work, except for the ones requiring conversion",
+    note: "Most sources should work, except for the ones requiring conversion or res piping",
   });
 });
 
