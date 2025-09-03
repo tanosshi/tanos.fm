@@ -1,6 +1,6 @@
 {
   "name": "tanos.fm-server",
-  "version": "1.5.1",
+  "version": "1.5.4",
   "description": "A quick yet ad-free media downloader",
   "main": "index.js",
   "scripts": {

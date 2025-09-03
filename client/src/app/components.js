@@ -2,7 +2,7 @@
  * @description The file containing everything you see in the front-end.
  */
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useDeferredValue } from "react";
 
 export const NotificationPanel = ({ notification, currentTheme }) => (
   <div
@@ -89,6 +89,22 @@ export const HeaderSection = ({
 
   const nextGlow = emojiAltStyle ? glowIntensity * 2.8 : glowIntensity * 1.1;
 
+  let emojiToDisplay = emojiAltStyle || currentTheme.emoji;
+  if (
+    emojiAltStyle &&
+    currentTheme &&
+    currentTheme.name &&
+    currentTheme.name.toLowerCase() === "tanos's pink"
+  ) {
+    emojiToDisplay = emojiAltStyle;
+  } else {
+    emojiToDisplay = currentTheme.emoji;
+  }
+
+  if (!emojiAltStyle) {
+    emojiToDisplay = currentTheme.emoji;
+  }
+
   return (
     <div className="flex flex-col items-center space-y-2 mb-6 float-appear">
       <span
@@ -109,7 +125,7 @@ export const HeaderSection = ({
         onMouseLeave={handleEmojiLeave}
         onClick={handleEmojiClick}
       >
-        {emojiAltStyle || currentTheme.emoji}
+        {emojiToDisplay}
       </span>
       <h1
         className="text-xl sm:text-2xl font-semibold text-gray-200"
@@ -325,79 +341,66 @@ export const SearchInput = ({
   buttonScale,
   getDynamicFontSize,
   randomPlaceholderText,
-}) => (
-  <div className="relative flex items-center w-full">
-    <textarea
-      id="tracker-text"
-      className="w-full p-3 rounded-lg bg-[#0a0a0a]/60 backdrop-blur-lg border border-[#333333]/50 text-gray-200 resize-none focus:outline-none focus:border-[#444444]/70 transition-colors placeholder-gray-500 text-xs sm:text-base pr-10"
-      rows="1"
-      placeholder={randomPlaceholderText}
-      value={result}
-      onChange={handleInputChange}
-      onKeyDown={handleKeyDown}
-      style={{
-        fontSize: getDynamicFontSize(result),
-        transition: "color 0.2s ease, background-color 0.2s ease",
-        caretColor: currentTheme.accent,
-        boxShadow: "0 2px 12px 0 #0002",
-      }}
-    />
-    <div
-      id="search"
-      className="backdrop-blur-lg absolute top-0 right-0 h-full border flex items-center justify-center bg-[#222222] rounded-r-lg search-btn"
-      style={{
-        width: isSearchHovered ? 105 : 35,
-        zIndex: 3,
-        right: "2%",
-        backgroundColor: `${currentTheme.accent}33`,
-        borderColor: `${currentTheme.accent}66`,
-        transform: `scale(${buttonScale})`,
-        transition:
-          "width 0.25s cubic-bezier(0.34,1.56,0.64,1), transform 0.2s cubic-bezier(0.34,1.56,0.64,1)",
-        WebkitTransform: "translateZ(0)",
-        boxShadow: `0 2px 16px 0 ${currentTheme.accent}22`,
-        animation: "bounceIn 1.1s cubic-bezier(0.34,1.56,0.64,1) both",
-        fontSize: "0.88rem",
-        height: "35px",
-        top: "15%",
-        display: "none", // soon
-        opacity: "0%", // soon
-        cursor: "pointer",
-        borderRadius: "7px",
-        paddingLeft: isSearchHovered ? 12 : 0,
-        paddingRight: isSearchHovered ? 12 : 0,
-      }}
-      onMouseEnter={() => setIsSearchHovered(true)}
-      onMouseLeave={() => setIsSearchHovered(false)}
-      onClick={() => setShowSearchOverlay(true)}
-    >
-      <span
+}) => {
+  const deferredResult = useDeferredValue(result);
+  const computedFontSize = React.useMemo(
+    () => getDynamicFontSize(deferredResult),
+    [getDynamicFontSize, deferredResult]
+  );
+
+  const [isTyping, setIsTyping] = React.useState(false);
+  const typingTimeoutRef = React.useRef(null);
+
+  const onChangeWithTyping = React.useCallback(
+    (e) => {
+      setIsTyping(true);
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+      typingTimeoutRef.current = setTimeout(() => setIsTyping(false), 400);
+      handleInputChange(e);
+    },
+    [handleInputChange]
+  );
+
+  return (
+    <div className="relative flex items-center w-full">
+      <style>{`
+        @keyframes typingPulse {
+          0% { box-shadow: 0 2px 12px 0 #0002, 0 0 0px ${currentTheme.accent}00; }
+          50% { box-shadow: 0 2px 12px 0 #0002, 0 0 5px ${currentTheme.accent}66; }
+          100% { box-shadow: 0 2px 12px 0 #0002, 0 0 0px ${currentTheme.accent}00; }
+        }
+      `}</style>
+      <textarea
+        id="tracker-text"
+        className="w-full p-3 rounded-lg bg-[#0a0a0a]/60 backdrop-blur-lg border border-[#333333]/50 text-gray-200 resize-none focus:outline-none focus:border-[#444444]/70 transition-colors placeholder-gray-500 text-xs sm:text-base pr-10"
+        rows="1"
+        placeholder={randomPlaceholderText}
+        value={result}
+        onChange={onChangeWithTyping}
+        onKeyDown={handleKeyDown}
+        inputMode="text"
+        autoComplete="off"
+        autoCorrect="off"
+        autoCapitalize="none"
+        spellCheck={false}
         style={{
           display: "flex",
           alignItems: "center",
           gap: 6,
           width: "100%",
           justifyContent: isSearchHovered ? "flex-start" : "center",
+          fontSize: computedFontSize,
+          transition: "color 0.2s ease, background-color 0.2s ease",
+          caretColor: currentTheme.accent,
+          boxShadow: "0 2px 12px 0 #0002",
+          animation: isTyping
+            ? "typingPulse 0.9s ease-in-out infinite"
+            : "none",
         }}
-      >
-        <span role="img" aria-label="search">
-          🔍
-        </span>
-        {isSearchHovered && (
-          <span
-            style={{
-              marginLeft: 4,
-              whiteSpace: "nowrap",
-              color: currentTheme.accent,
-            }}
-          >
-            search
-          </span>
-        )}
-      </span>
+      />
     </div>
-  </div>
-);
+  );
+};
 
 export const SearchButton = ({
   fetchData,
@@ -407,59 +410,77 @@ export const SearchButton = ({
   handleButtonMouseUp,
   currentTheme,
   emojiAltStyle,
-}) => (
-  <button
-    onClick={fetchData}
-    id="fc"
-    className={`mt-4 px-12 py-3 backdrop-blur-lg text-gray-200 rounded-lg border flex items-center text-base sm:text-lg w-full justify-center transition-all duration-200 cursor-pointer hover:scale-105`}
-    style={{
-      backgroundColor: `${currentTheme?.accent ?? "#ff80bf"}33`,
-      borderColor: `${currentTheme?.accent ?? "#ff80bf"}66`,
-      transition: "transform 0.2s cubic-bezier(0.34,1.56,0.64,1)",
-      boxShadow: `0 2px 16px 0 ${currentTheme?.accent ?? "#ff80bf"}22`,
-    }}
-    onMouseDown={handleButtonMouseDown}
-    onMouseUp={handleButtonMouseUp}
-  >
-    <span id="btn-text" className="flex items-center gap-2">
-      grab
-      <span
-        className="text-lg sm:text-xl"
-        style={{
-          filter: `${currentTheme?.grabcolor ?? "brightness('1')"}`,
-          transform: emojiAltStyle ? "scaleX(0.65)" : "scaleX(1)",
-          zoom: emojiAltStyle ? 0.9 : 1,
-          transform: `scale(${buttonScale})`,
-        }}
-      >
-        ⚡
-      </span>
-    </span>
-    <svg
-      id="spinner"
-      className={`w-5 h-5 ml-3 ${
-        isLoading ? "" : "hidden"
-      } animate-spin text-gray-200`}
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 0 24 24"
+}) => {
+  const [mousePosition, setMousePosition] = React.useState({ x: 0, y: 0 });
+  const buttonRef = React.useRef(null);
+
+  const handleMouseMove = (e) => {
+    if (!buttonRef.current) return;
+    const rect = buttonRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left - rect.width / 2;
+    const y = e.clientY - rect.top - rect.height / 2;
+    setMousePosition({ x: x * 0.1, y: y * 0.1 }); // Reduced movement factor for subtlety
+  };
+
+  return (
+    <button
+      ref={buttonRef}
+      onClick={fetchData}
+      id="fc"
+      onMouseMove={handleMouseMove}
+      onMouseLeave={() => setMousePosition({ x: 0, y: 0 })}
+      className={`mt-4 px-12 py-3 backdrop-blur-lg text-gray-200 rounded-lg border flex items-center text-base sm:text-lg w-full justify-center transition-all duration-200 cursor-pointer hover:scale-105 hover:brightness-125`}
+      style={{
+        backgroundColor: `${currentTheme?.accent ?? "#ff80bf"}33`,
+        borderColor: `${currentTheme?.accent ?? "#ff80bf"}66`,
+        transition: "all 0.15s cubic-bezier(0.34,1.56,0.64,1)",
+        boxShadow: `0 2px 16px 0 ${currentTheme?.accent ?? "#ff80bf"}55`,
+        transform: `translate(${mousePosition.x}px, ${mousePosition.y}px) scale(${buttonScale})`,
+        willChange: "transform, box-shadow",
+      }}
+      onMouseDown={handleButtonMouseDown}
+      onMouseUp={handleButtonMouseUp}
     >
-      <circle
-        className="opacity-25"
-        cx="12"
-        cy="12"
-        r="10"
-        stroke="currentColor"
-        strokeWidth="4"
-      ></circle>
-      <path
-        className="opacity-75"
-        fill="currentColor"
-        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-      ></path>
-    </svg>
-  </button>
-);
+      <span id="btn-text" className="flex items-center gap-2">
+        grab
+        <span
+          className="text-lg sm:text-xl"
+          style={{
+            filter: `${currentTheme?.grabcolor ?? "brightness('1')"}`,
+            transform: emojiAltStyle ? "scaleX(0.65)" : "scaleX(1)",
+            zoom: emojiAltStyle ? 0.9 : 1,
+            transform: `scale(${buttonScale})`,
+          }}
+        >
+          ⚡
+        </span>
+      </span>
+      <svg
+        id="spinner"
+        className={`w-5 h-5 ml-3 ${
+          isLoading ? "" : "hidden"
+        } animate-spin text-gray-200`}
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+      >
+        <circle
+          className="opacity-25"
+          cx="12"
+          cy="12"
+          r="10"
+          stroke="currentColor"
+          strokeWidth="4"
+        ></circle>
+        <path
+          className="opacity-75"
+          fill="currentColor"
+          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+        ></path>
+      </svg>
+    </button>
+  );
+};
 
 export const FooterSection = ({
   currentTheme,

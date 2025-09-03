@@ -89,6 +89,7 @@ npm start
 | 📷 Instagram Integration                                                             | ✅ **Complete**    | High     | ✅  |
 | ☁️ SoundCloud Integration                                                            | ✅ **Complete**    | High     | ✅  |
 | 📌 Pinterest Integration                                                             | ✅ **Complete**    | Medium   | ✅  |
+| 👽 Reddit Integration                                                                | ✅ **Complete**    | High     | ✅  |
 | 📁 Indirect Google Drive Download                                                    | ✅ **Complete**    | Low      | ✅  |
 | 🔧 FFmpeg Optimization                                                               | ✅ **Complete**    | High     | ✅  |
 | 📹 Full Quality Video Downloads                                                      | ✅ **Complete**    | Medium   | ✅  |

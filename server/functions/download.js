@@ -93,8 +93,6 @@ router.get("/", async (req, res) => {
     });
   }
 
-  console.log(url);
-
   const fileHostingServices = [
     "mega",
     "mediafire",

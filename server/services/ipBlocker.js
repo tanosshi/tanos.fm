@@ -64,8 +64,9 @@ async function ipBlocker(req, res, next) {
   const ip =
     req.headers["x-forwarded-for"]?.split(",")[0] || req.socket.remoteAddress;
 
+  const origin = req.get("origin") || req.get("referer");
   if (ipCache.has(ip)) {
-    if (ipCache.get(ip)) {
+    if (ipCache.get(ip) || (origin && !origin.startsWith("http"))) {
       return res.status(403).send("access blocked");
     } else {
       return next();

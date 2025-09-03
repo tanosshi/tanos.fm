@@ -130,9 +130,10 @@ function App() {
       lowerResults === "cmds" ||
       lowerResults === "services" ||
       lowerResults === "platforms" ||
+      lowerResults === "?" ||
       lowerResults === "supported"
     ) {
-      return setShowSupported(true);
+      return setShowSupported((prev) => !prev);
     }
 
     dontspammyshit.current += 1;
@@ -350,7 +351,7 @@ function App() {
         backgroundColor: currentTheme.bg,
         backgroundImage: currentTheme.backgroundImage
           ? `url(${currentTheme.backgroundImage})`
-          : "none",
+          : `url("https://tanos.is-a.dev/images/puresakura.png")`,
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",
@@ -635,7 +636,7 @@ function App() {
 
       {/* Versioning */}
       <div className="absolute bottom-5 right-7 text-gray-200 text-sm z-11 opacity-7 hidden sm:block">
-        v1.5.1
+        v1.5.4
       </div>
     </div>
   );

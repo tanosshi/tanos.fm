@@ -84,6 +84,33 @@ function logToHistory(requestData) {
 
 async function processFetch(req, res) {
   const { url, apiKey } = req.body;
+
+  if (!req.ip || !url || !req.get("referer") || !req.get("origin"))
+    return res.status(400).json({
+      valid: false,
+      message: "Invalid request",
+    });
+
+  if (!url || typeof url !== "string" || url.startsWith("`")) {
+    return res.status(400).json({
+      valid: false,
+      message: "Please enter a valid URL",
+    });
+  }
+
+  if (!isValidUrl(url.trim())) {
+    return res.status(400).json({
+      valid: false,
+      message: "Invalid or unsupported URL",
+    });
+  }
+
+  if (!url.includes("/" || !url.includes(".")))
+    return res.status(400).json({
+      valid: false,
+      message: "Incomplete URL provided",
+    });
+
   switch (
     true // remains a demo for now
   ) {
@@ -103,21 +130,6 @@ async function processFetch(req, res) {
       success: false,
       mediaType: "unknown",
     };
-
-    if (!url || typeof url !== "string") {
-      return res.status(400).json({
-        valid: false,
-        message: "Please enter a valid URL",
-      });
-    }
-
-    const isValid = isValidUrl(url.trim());
-    if (!isValid) {
-      return res.status(400).json({
-        valid: false,
-        message: "Invalid or unsupported URL",
-      });
-    }
 
     let mediaInfo;
     const isMusic = url.includes("music.youtube.com");
@@ -325,13 +337,13 @@ async function processFetch(req, res) {
     console.error("Server error:", error);
     return res.status(500).json({
       valid: false,
-      message: error.message || "Error processing URL. Please try again.",
+      message: error.message || "Error processing URL, please try again later.",
     });
   }
 
   return res.status(500).json({
     valid: false,
-    message: "somethihng in the code went wrong if youre seeing this",
+    message: "Something in the code went wrong if youre seeing this",
   });
 }
 
