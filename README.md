@@ -109,29 +109,7 @@ npm start
 
 </div>
 
----
-
-## 🛠️ What was used?
-
-<div align="center">
-
-### Backend
-
-![Node.js](https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white)
-![Express](https://img.shields.io/badge/Express-000000?style=for-the-badge&logo=express&logoColor=white)
-![FFmpeg](https://img.shields.io/badge/FFmpeg-007808?style=for-the-badge&logo=ffmpeg&logoColor=white)
-
-### Frontend
-
-![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)
-![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white)
-![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
-
-</div>
-
----
-
-## 🤝 Contributors & Credits
+## 🤝 The Developer
 
 <div align="center">
 <table>
@@ -144,20 +122,19 @@ npm start
 </td>
 </tr>
 </table>
+
+![Node.js](https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white)
+![Express](https://img.shields.io/badge/Express-000000?style=for-the-badge&logo=express&logoColor=white)
+![FFmpeg](https://img.shields.io/badge/FFmpeg-007808?style=for-the-badge&logo=ffmpeg&logoColor=white)
+![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)
+![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white)
+![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
+
 </div>
 
-### 🔧 Core Dependencies
 
-| Package                   | Purpose                         |
-| ------------------------- | ------------------------------- |
-| **ruhend-scraper**        | 🕷️ Media scraper + Link fetcher |
-| **btch**                  | 🕷️ Media scraper + Link fetcher |
-| **@distube/ytdl-core**    | 📺 YouTube processing           |
-| **twitter-downloader**    | 🐦 Twitter media extraction     |
-| **soundcloud-downloader** | 🎵 SoundCloud integration       |
-| **fluent-ffmpeg**         | 🎬 Media conversion engine      |
-
----
+<div align="center">
+</div>
 
 ## ⚠️ Important Notice
 
@@ -167,17 +144,6 @@ npm start
 This project is created for educational and research purposes. Please respect copyright laws and terms of service of the platforms you interact with.
 </blockquote>
 </div>
-
----
-
-## 🌟 Show Your Appreciation
-
-If you found the project somewhat interesting, dont be shy to:
-
-- ⭐ **Star** this repository
-- 🍴 **Fork** for your own experiments
-- 🐛 **Report bugs** you encounter
-- 💡 **Suggest features** you'd like to see
 
 ---
 
@@ -192,3 +158,4 @@ If you found the project somewhat interesting, dont be shy to:
 _Always made with ❤️ by THE tanos_
 
 </div>
+
