@@ -18,3 +18,4 @@ client/src/ol.app.js
 *temp_*.*
 ip-list.txt
 *.bak
+package-lock.json

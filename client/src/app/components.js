@@ -447,9 +447,8 @@ export const SearchButton = ({
           className="text-lg sm:text-xl"
           style={{
             filter: `${currentTheme?.grabcolor ?? "brightness('1')"}`,
-            transform: emojiAltStyle ? "scaleX(0.65)" : "scaleX(1)",
+            transform: `${emojiAltStyle ? "scaleX(0.65)" : "scaleX(1)"} scale(${buttonScale})`,
             zoom: emojiAltStyle ? 0.9 : 1,
-            transform: `scale(${buttonScale})`,
           }}
         >
           ⚡
